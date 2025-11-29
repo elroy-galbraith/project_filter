@@ -2,7 +2,9 @@
 
 ## SMG-Labs | Caribbean Voices AI Hackathon
 
-**Architecture:** FastAPI + React (refactored from Streamlit for scalability)
+**Context:** Hurricane Melissa Response Demo (October 28, 2025)
+**Architecture:** FastAPI + React
+**Innovation:** 3-Layer Crisis Triage System (Caribbean ASR → Local NLP → Bio-Acoustic Analysis)
 
 ---
 
@@ -72,10 +74,11 @@ project_filter/
 │   │   ├── App.jsx           # Main dashboard component
 │   │   ├── App.css           # Styling (ported from Streamlit)
 │   │   └── components/
-│   │       ├── CallFeed.jsx       # Sidebar call list
-│   │       ├── CallMetrics.jsx    # Top metrics row
-│   │       ├── AudioSection.jsx   # Audio player + transcript
-│   │       └── BioAcoustics.jsx   # Bio-acoustic analysis panel
+│   │       ├── CallFeed.jsx        # Sidebar call list
+│   │       ├── CallMetrics.jsx     # Top metrics row
+│   │       ├── AudioSection.jsx    # Audio player + transcript
+│   │       ├── BioAcoustics.jsx    # Bio-acoustic analysis panel
+│   │       └── NLPExtraction.jsx   # NLP entity extraction (NEW)
 │   ├── package.json
 │   └── vite.config.js        # Proxy config for API calls
 ├── assets/                    # Audio files (served by FastAPI)
@@ -90,6 +93,42 @@ project_filter/
 
 ---
 
+## The 3-Layer System
+
+### Layer 1: Caribbean ASR (Whisper Fine-Tuned)
+- Accurately transcribes Caribbean English and Patois
+- Foundation for all downstream analysis
+- **Without this, NLP extraction fails (garbage in, garbage out)**
+
+### Layer 2: Local NLP Extraction (Llama-3-8B via Ollama)
+- Runs offline - no internet required
+- Extracts structured entities from transcripts:
+  - `location` - Precise location with landmarks
+  - `hazard_type` - Specific hazard classification
+  - `blocked_access` - Access restrictions
+  - `people_count` - Number of people affected
+  - `resource_need` - Dispatch recommendations
+- **Turns transcripts into dispatch orders**
+
+### Layer 3: Bio-Acoustic Analysis
+- Detects vocal distress even when ASR fails
+- Measures pitch (vocal stress), energy (shouting), distress score
+- **Safety net for deep Patois under extreme stress**
+- Routes high-distress calls to human dispatchers
+
+### The Pipeline in Action
+
+**Green Calls (Standard dialect, calm):**
+- ASR: 88-92% confidence → NLP extracts full dispatch order → Auto-logged
+
+**Red Call (Patois, distress, background noise):**
+- ASR: 31% confidence (partial transcription)
+- Bio-Acoustic: Pitch 289 Hz, Energy 0.11, Distress 94
+- NLP: Still extracts "5 people", "rooftop", "children", "immediate evacuation"
+- **Result:** Priority routing with actionable rescue data
+
+---
+
 ## API Documentation
 
 Once the backend is running, visit:
@@ -98,7 +137,7 @@ Once the backend is running, visit:
 
 ### Endpoints
 
-- `GET /api/calls` - Returns all calls
+- `GET /api/calls` - Returns all calls with NLP extraction data
 - `GET /api/calls/{call_id}` - Returns specific call
 - `GET /health` - Health check
 
@@ -109,11 +148,23 @@ Once the backend is running, visit:
 ### To update the mock data:
 
 Edit `backend/data.py` and modify the `CALL_LOG` list:
+
+**ASR Fields:**
 - `transcript`: What shows as the ASR output
 - `confidence`: 0.0-1.0 (lower = worse transcription)
+
+**Bio-Acoustic Fields:**
 - `pitch_avg`: Hz value (>240 = distress indicator)
 - `energy_avg`: RMS value (>0.05 = loud/distress)
 - `distress_score`: 0-100 (>60 triggers red routing)
+
+**NLP Extraction Fields:**
+- `location`: Precise location intel
+- `landmark`: Notable landmarks
+- `hazard_type`: Hazard classification
+- `blocked_access`: Access restrictions
+- `people_count`: People affected (can be "5", "Area-wide", etc.)
+- `resource_need`: Dispatch recommendations
 
 ### To add your audio files:
 
@@ -182,30 +233,18 @@ This is the emotional center of your demo. It needs to sound real.
 
 ---
 
-## Demo Script for Video
+## Demo Flow for Pitch Video
 
-**[Start with dashboard showing Call 1 selected]**
+See [PITCH_SCRIPT.md](PITCH_SCRIPT.md) for the complete 3-minute video script.
 
-"Here's a standard infrastructure call. The system detects steady pitch at 135 hertz,
-high ASR confidence. It automatically transcribes and logs the downed pole location.
-No human dispatcher needed."
+**Quick Demo Notes:**
 
-**[Click Call 2, wait for spinner]**
+1. **Call 1 (Green):** ASR 92% → NLP extracts "Hospital entrance blocked, JPS crew needed" → Auto-logged
+2. **Call 2 (Green):** ASR 88% → NLP extracts "Santa Cruz bridge flooded, traffic diversion needed" → Auto-logged
+3. **Call 3 (Green):** ASR 91% → NLP extracts "Savanna-la-Mar water outage, NWC crew needed" → Auto-logged
+4. **Call 4 (RED):** ASR 31% → Bio-Acoustic detects distress (289 Hz pitch) → NLP still extracts "5 people, rooftop, children, evacuation needed" → Priority routing
 
-"Another routine report - high water on Spanish Town Road. Again, auto-logged.
-The system is clearing the queue."
-
-**[Click Call 4 (the red one), wait for spinner]**
-
-"But then... this call comes in. Listen to the transcript - it's fragmented, incomplete.
-The ASR confidence drops to 31 percent. But look at the right side:
-pitch spikes to 289 hertz. Energy at 0.11. The Bio-Acoustic layer recognizes
-the sound of panic - even when it can't understand the words.
-
-Distress score: 94. The system doesn't try to auto-log this.
-It immediately routes to the human dispatcher, queue position one.
-
-This is the filter in action. We handle the volume, so humans can hear the signal."
+**Key Message:** Caribbean ASR is the foundation. Without accurate transcription, NLP cannot extract actionable intelligence. The bio-acoustic layer ensures high-distress calls never get lost, even when ASR fails.
 
 ---
 
@@ -223,12 +262,19 @@ This is the filter in action. We handle the volume, so humans can hear the signa
 **Backend:**
 - FastAPI - Modern Python web framework
 - Uvicorn - ASGI server
-- Pydantic - Data validation
+- Pydantic - Data validation with NLP extraction models
 
 **Frontend:**
 - React 19 - UI library
 - Vite - Build tool & dev server
 - Axios - HTTP client
+
+**Production AI Stack (Not Implemented in Demo):**
+- Whisper (fine-tuned on Caribbean broadcast data) - ASR
+- Llama-3-8B via Ollama - Local NLP extraction
+- Librosa - Bio-acoustic feature extraction
+
+**Demo Note:** This dashboard uses pre-computed mock data to simulate the 3-layer system. In production, audio would be processed through the actual AI pipeline.
 
 ---
 
@@ -261,7 +307,25 @@ This is the filter in action. We handle the volume, so humans can hear the signa
 
 ---
 
-Built for the Caribbean Voices AI Hackathon 2025
-SMG-Labs: Elroy, Chad, Donahue
+## Project Context
 
-**Refactored to FastAPI + React architecture for pitch competition demo**
+**Hurricane Melissa - October 28, 2025**
+- Category 5, 185 mph winds
+- Strongest storm to hit Jamaica since 1851
+- Black River, St. Elizabeth Parish was ground zero
+- <50% of the island had communications post-storm
+- 77% of Jamaica lost power
+- $6 billion in damage (30% of Jamaica's GDP)
+
+**The Problem:**
+Emergency dispatchers were overwhelmed. Standard ASR systems failed on deep Patois spoken under stress. The most vulnerable calls became invisible to the system.
+
+**The Solution:**
+Caribbean-calibrated ASR + Local NLP + Bio-Acoustic triage. When words fail, vocal stress patterns route the call to human dispatchers.
+
+---
+
+Built for the Caribbean Voices AI Hackathon 2025
+**SMG-Labs:** Elroy, Chad, Donahue
+
+*"We turn voices into rescue missions."*
