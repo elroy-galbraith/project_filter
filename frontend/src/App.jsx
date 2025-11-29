@@ -2,10 +2,9 @@ import { useState, useEffect } from 'react';
 import axios from 'axios';
 import './App.css';
 import CallFeed from './components/CallFeed';
-import CallMetrics from './components/CallMetrics';
-import AudioSection from './components/AudioSection';
-import BioAcoustics from './components/BioAcoustics';
-import NLPExtraction from './components/NLPExtraction';
+import NLPIntelRow from './components/NLPIntelRow';
+import TranscriptCompact from './components/TranscriptCompact';
+import BioAcousticCompact from './components/BioAcousticCompact';
 
 function App() {
   const [calls, setCalls] = useState([]);
@@ -97,7 +96,7 @@ function App() {
           />
         </div>
 
-        {/* Main Content */}
+        {/* Main Content - Zero Scroll Layout */}
         <div className="main-content">
           {switching ? (
             <div className="loading-text">
@@ -106,18 +105,14 @@ function App() {
             </div>
           ) : (
             <>
-              <h3>📊 Call Analysis</h3>
-              <CallMetrics call={selectedCall} />
+              {/* NLP Intel Row - Dispatch-Critical Data (Top Priority) */}
+              <NLPIntelRow call={selectedCall} />
 
-              <hr />
-
-              <div className="content-grid">
-                <AudioSection call={selectedCall} />
-                <BioAcoustics call={selectedCall} />
+              {/* Evidence Row - Supporting Information */}
+              <div className="evidence-row">
+                <TranscriptCompact call={selectedCall} />
+                <BioAcousticCompact call={selectedCall} />
               </div>
-
-              {/* NLP Extraction Panel */}
-              <NLPExtraction call={selectedCall} />
             </>
           )}
         </div>
