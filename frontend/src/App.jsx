@@ -5,6 +5,7 @@ import CallFeed from './components/CallFeed';
 import CallMetrics from './components/CallMetrics';
 import AudioSection from './components/AudioSection';
 import BioAcoustics from './components/BioAcoustics';
+import NLPExtraction from './components/NLPExtraction';
 
 function App() {
   const [calls, setCalls] = useState([]);
@@ -72,10 +73,10 @@ function App() {
       {/* Status Bar */}
       <div className="status-bar">
         <div>
-          <strong>Active Region:</strong> Portland Parish, Jamaica
+          <strong>Active Region:</strong> St. Elizabeth Parish, Jamaica
         </div>
         <div>
-          <span className="status-active">● DISASTER MODE ACTIVE</span>
+          <span className="status-active">● HURRICANE MELISSA - DISASTER MODE</span>
         </div>
         <div>
           <strong>Pending Human Review:</strong> {pendingReview}
@@ -114,6 +115,9 @@ function App() {
                 <AudioSection call={selectedCall} />
                 <BioAcoustics call={selectedCall} />
               </div>
+
+              {/* NLP Extraction Panel */}
+              <NLPExtraction call={selectedCall} />
             </>
           )}
         </div>
@@ -121,7 +125,7 @@ function App() {
 
       {/* Footer */}
       <div className="footer">
-        Project Filter • SMG-Labs • Caribbean Voices AI Hackathon 2025
+        Project Filter • SMG-Labs • Caribbean Voices AI Hackathon 2025 • Hurricane Melissa Response Demo
       </div>
     </div>
   );

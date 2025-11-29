@@ -2,6 +2,15 @@ from pydantic import BaseModel
 from typing import Optional
 
 
+class NLPExtraction(BaseModel):
+    location: Optional[str] = None
+    landmark: Optional[str] = None
+    hazard_type: Optional[str] = None
+    blocked_access: Optional[str] = None
+    people_count: Optional[str] = None
+    resource_need: Optional[str] = None
+
+
 class Call(BaseModel):
     id: str
     time: str
@@ -15,3 +24,4 @@ class Call(BaseModel):
     status: str
     location: str
     category: str
+    nlp_extraction: Optional[NLPExtraction] = None

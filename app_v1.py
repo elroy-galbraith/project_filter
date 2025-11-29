@@ -91,62 +91,96 @@ st.markdown("""
 
 # --- MOCK DATABASE (PRE-COMPUTED RESULTS) ---
 # 4 calls: 3 green (auto-logged), 1 red (human review)
+# Locations reference actual areas affected by Hurricane Melissa (Oct 28, 2025)
+# NLP extraction demonstrates the value of accurate Caribbean ASR
 CALL_LOG = [
     {
         "id": "CALL-1042",
         "time": "14:02:15",
         "audio_file": "assets/call_1_calm.wav", 
-        "transcript": "Reporting a downed utility pole on Nelson Street. It is blocking the main entrance to the hospital.",
+        "transcript": "Reporting a downed utility pole on the main road into Black River. It is blocking the entrance to the hospital.",
         "confidence": 0.92,
         "pitch_avg": 135,
         "energy_avg": 0.02,
         "distress_score": 15,
         "is_distress": False,
         "status": "AUTO-LOGGED",
-        "location": "Nelson St, Kingston",
-        "category": "Infrastructure: Power"
+        "location": "Black River, St. Elizabeth",
+        "category": "Infrastructure: Power",
+        "nlp_extraction": {
+            "location": "Main road, Black River",
+            "landmark": "Hospital entrance",
+            "hazard_type": "Downed utility pole",
+            "blocked_access": "Yes - hospital",
+            "people_count": None,
+            "resource_need": "JPS / Line clearance crew"
+        }
     },
     {
         "id": "CALL-1043",
         "time": "14:02:38",
         "audio_file": "assets/call_2_calm.wav",
-        "transcript": "The bridge at Spanish Town Road has high water levels, but traffic is still moving slowly.",
+        "transcript": "The bridge at Santa Cruz has high water levels. Traffic is not moving. The road is impassable.",
         "confidence": 0.88,
         "pitch_avg": 142,
         "energy_avg": 0.03,
         "distress_score": 22,
         "is_distress": False,
         "status": "AUTO-LOGGED",
-        "location": "Spanish Town Rd",
-        "category": "Infrastructure: Roads"
+        "location": "Santa Cruz, St. Elizabeth",
+        "category": "Infrastructure: Roads",
+        "nlp_extraction": {
+            "location": "Santa Cruz Bridge",
+            "landmark": None,
+            "hazard_type": "Flooding - road impassable",
+            "blocked_access": "Yes - bridge",
+            "people_count": None,
+            "resource_need": "Traffic diversion / NWA alert"
+        }
     },
     {
         "id": "CALL-1044",
         "time": "14:03:01",
         "audio_file": "assets/call_3_calm.wav",
-        "transcript": "Water service is currently off in the Portmore area. We have been without water since this morning.",
+        "transcript": "Water service is currently off in the Savanna-la-Mar area. We have been without water since the storm passed.",
         "confidence": 0.91,
         "pitch_avg": 128,
         "energy_avg": 0.025,
         "distress_score": 18,
         "is_distress": False,
         "status": "AUTO-LOGGED",
-        "location": "Portmore, St. Catherine",
-        "category": "Infrastructure: Water"
+        "location": "Savanna-la-Mar, Westmoreland",
+        "category": "Infrastructure: Water",
+        "nlp_extraction": {
+            "location": "Savanna-la-Mar (area-wide)",
+            "landmark": None,
+            "hazard_type": "Water service outage",
+            "blocked_access": None,
+            "people_count": "Area-wide impact",
+            "resource_need": "NWC restoration crew"
+        }
     },
     {
         "id": "CALL-1045",  # THE HERO CALL - Patois under distress
         "time": "14:03:12",
         "audio_file": "assets/call_4_panic.wav",
-        "transcript": "[wind/rain] ...di wata... [unintelligible] ...a mi waist... pickney dem... [crying] ...beg unnu send help now... [unintelligible]",
+        "transcript": "[wind/rain] ...di wata... [unintelligible] ...a mi waist... pickney dem... [crying] ...five a wi pan di roof... beg unnu send help now... [unintelligible]",
         "confidence": 0.31,
         "pitch_avg": 289,
         "energy_avg": 0.11,
         "distress_score": 94,
         "is_distress": True,
         "status": "HUMAN REVIEW",
-        "location": "Unknown - Cell Tower: Portland Parish",
-        "category": "LIFE SAFETY"
+        "location": "Unknown - Cell Tower: New Hope, St. Elizabeth",
+        "category": "LIFE SAFETY",
+        "nlp_extraction": {
+            "location": "Rooftop (Cell tower: New Hope)",
+            "landmark": None,
+            "hazard_type": "Flood - Rising water",
+            "blocked_access": "Trapped - cannot move",
+            "people_count": "5 (includes children)",
+            "resource_need": "IMMEDIATE EVACUATION - Boat/Helicopter"
+        }
     }
 ]
 
@@ -159,7 +193,7 @@ st.markdown("""
 <div class="brand-header">
     <div>
         <p class="brand-title">🚨 PROJECT FILTER</p>
-        <p class="brand-subtitle">Crisis Triage Dashboard • Bio-Acoustic Intelligence</p>
+        <p class="brand-subtitle">Crisis Triage Dashboard • ASR + NLP + Bio-Acoustic Intelligence</p>
     </div>
     <div style="text-align: right;">
         <p class="brand-logo">SMG-Labs</p>
@@ -171,9 +205,9 @@ st.markdown("""
 # --- REGION & STATUS BAR ---
 col_region, col_status, col_calls = st.columns([2, 1, 1])
 with col_region:
-    st.markdown("**Active Region:** Portland Parish, Jamaica")
+    st.markdown("**Active Region:** St. Elizabeth Parish, Jamaica")
 with col_status:
-    st.markdown('<span class="status-active">● DISASTER MODE ACTIVE</span>', unsafe_allow_html=True)
+    st.markdown('<span class="status-active">● HURRICANE MELISSA RESPONSE</span>', unsafe_allow_html=True)
 with col_calls:
     pending = sum(1 for c in CALL_LOG if c['is_distress'])
     st.markdown(f"**Pending Human Review:** {pending}")
@@ -296,6 +330,47 @@ with right_col:
         </div>
         """.format(c['category']), unsafe_allow_html=True)
 
+# --- NLP EXTRACTION PANEL (Full Width) ---
+st.markdown("---")
+st.markdown("### 🧠 Local NLP Extraction")
+st.caption("Entity extraction via Llama-3-8B (Offline via Ollama) • Enabled by accurate Caribbean ASR")
+
+nlp = c.get('nlp_extraction', {})
+
+# Display extracted entities in a structured grid
+col_nlp1, col_nlp2, col_nlp3 = st.columns(3)
+
+with col_nlp1:
+    st.markdown("**📍 Location Intel**")
+    st.info(f"**Location:** {nlp.get('location', 'N/A')}")
+    if nlp.get('landmark'):
+        st.info(f"**Landmark:** {nlp.get('landmark')}")
+    if nlp.get('blocked_access'):
+        st.warning(f"**Access:** {nlp.get('blocked_access')}")
+
+with col_nlp2:
+    st.markdown("**⚠️ Hazard Assessment**")
+    hazard = nlp.get('hazard_type', 'N/A')
+    if c['is_distress']:
+        st.error(f"**Type:** {hazard}")
+    else:
+        st.warning(f"**Type:** {hazard}")
+    
+    if nlp.get('people_count'):
+        pax = nlp.get('people_count')
+        if c['is_distress']:
+            st.error(f"**People:** {pax}")
+        else:
+            st.info(f"**People:** {pax}")
+
+with col_nlp3:
+    st.markdown("**🆘 Resource Dispatch**")
+    need = nlp.get('resource_need', 'N/A')
+    if c['is_distress']:
+        st.error(f"**Need:** {need}")
+    else:
+        st.success(f"**Assign:** {need}")
+
 # --- FOOTER ---
 st.markdown("---")
-st.caption("Project Filter • SMG-Labs • Caribbean Voices AI Hackathon 2025")
+st.caption("Project Filter • SMG-Labs • Caribbean Voices AI Hackathon 2025 • Hurricane Melissa Response Demo")
