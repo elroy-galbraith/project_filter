@@ -127,21 +127,27 @@
 >
 > During Melissa, seventy-seven percent of Jamaica lost power. Cell towers were the only thing standing. Our system runs on a laptop in the command center. No cloud. No API calls. No single point of failure.
 
+**[Beat - broaden the scope]**
+
+> We built this for hurricane response. But the architecture works for *any* emergency call center in the Caribbean—police, fire, ambulance. Any 119 dispatcher drowning in calls while someone's life hangs in the balance.
+>
+> The problem is the same everywhere: Caribbean voices aren't understood by standard technology. Project Filter changes that.
+
 **[Beat]**
 
 > Minister Samuda told the world: "Hurricane Melissa changed the life of every Jamaican in less than 24 hours."
 >
-> We can't stop the next storm. But we can make sure that when it comes, every voice becomes a rescue mission.
+> We can't stop the next storm. But we can make sure that when it comes—or when any emergency happens—every voice becomes a rescue mission.
 
 ---
 
-## SECTION 5: FEASIBILITY + CLOSE (2:40 - 2:55)
+## SECTION 5: FEASIBILITY + CLOSE (2:45 - 2:55)
 
 **[VISUAL: Presenter direct to camera]**
 
-> The tech stack is proven and open-source. Whisper for ASR—fine-tuned on Caribbean data. Llama 3 via Ollama for NLP—runs on a single GPU. Librosa for acoustic analysis. No proprietary dependencies. No internet required.
+> The tech stack is proven and open-source. Whisper for ASR. Llama 3 via Ollama for NLP. Librosa for acoustic analysis. No proprietary dependencies. No internet required.
 >
-> We're not asking ODPEM to rebuild their infrastructure. We're giving them an intelligence layer that sits on top of what they already have.
+> We're not asking emergency services to rebuild their infrastructure. We're giving them an intelligence layer that sits on top of what they already have.
 
 **[Final beat - deliver the closer with conviction]**
 
@@ -174,8 +180,8 @@ Caribbean Voices AI Hackathon 2025
 | Hook (Melissa context) | 0:40 | 0:40 |
 | Innovation (3 layers + Green Calls) | 0:45 | 1:25 |
 | Red Call / Bio-Acoustic + NLP | 0:50 | 2:15 |
-| Impact (GIGO + Offline) | 0:25 | 2:40 |
-| Feasibility + Close | 0:15 | 2:55 |
+| Impact (GIGO + Offline + Broader Applications) | 0:30 | 2:45 |
+| Feasibility + Close | 0:10 | 2:55 |
 | End Card | 0:05 | 3:00 |
 
 ### Key Facts Referenced
@@ -209,7 +215,9 @@ Caribbean Voices AI Hackathon 2025
 
 6. **"Garbage in, garbage out"** (2:20) - The thesis. Why Caribbean ASR matters.
 
-7. **The closer** (2:50) - "We turn voices into rescue missions." Direct to camera. Conviction.
+7. **"Police, fire, ambulance. Any 119 dispatcher..."** (2:35) - The scope expansion. Show judges this isn't a one-time solution.
+
+8. **The closer** (2:50) - "We turn voices into rescue missions." Direct to camera. Conviction.
 
 ### Recording Tips
 
