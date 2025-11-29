@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import './App.css';
-import CallFeed from './components/CallFeed';
+import MapView from './components/MapView';
 import NLPIntelRow from './components/NLPIntelRow';
 import TranscriptCompact from './components/TranscriptCompact';
 import BioAcousticCompact from './components/BioAcousticCompact';
@@ -11,6 +11,8 @@ function App() {
   const [selectedCall, setSelectedCall] = useState(null);
   const [loading, setLoading] = useState(true);
   const [switching, setSwitching] = useState(false);
+  const [sidebarWidth, setSidebarWidth] = useState(66); // percentage
+  const [isResizing, setIsResizing] = useState(false);
 
   useEffect(() => {
     // Fetch calls on mount
@@ -41,6 +43,44 @@ function App() {
       setSwitching(false);
     }, 700);
   };
+
+  const handleMouseDown = () => {
+    setIsResizing(true);
+  };
+
+  const handleMouseMove = (e) => {
+    if (!isResizing) return;
+
+    const container = document.querySelector('.layout');
+    if (!container) return;
+
+    const containerRect = container.getBoundingClientRect();
+    const newWidth = ((e.clientX - containerRect.left) / containerRect.width) * 100;
+
+    // Constrain between 30% and 80%
+    if (newWidth >= 30 && newWidth <= 80) {
+      setSidebarWidth(newWidth);
+    }
+  };
+
+  const handleMouseUp = () => {
+    setIsResizing(false);
+  };
+
+  useEffect(() => {
+    if (isResizing) {
+      document.addEventListener('mousemove', handleMouseMove);
+      document.addEventListener('mouseup', handleMouseUp);
+    } else {
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+    }
+
+    return () => {
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+    };
+  }, [isResizing]);
 
   const pendingReview = calls.filter(c => c.is_distress).length;
 
@@ -85,15 +125,22 @@ function App() {
       <hr />
 
       {/* Main Layout */}
-      <div className="layout">
-        {/* Sidebar */}
+      <div className="layout" style={{ gridTemplateColumns: `${sidebarWidth}% 12px ${100 - sidebarWidth - 1}%` }}>
+        {/* Map Sidebar */}
         <div className="sidebar">
-          <CallFeed
+          <MapView
             calls={calls}
             selectedCall={selectedCall}
             onSelectCall={handleSelectCall}
-            loading={switching}
           />
+        </div>
+
+        {/* Resize Handle */}
+        <div
+          className={`resize-handle ${isResizing ? 'resizing' : ''}`}
+          onMouseDown={handleMouseDown}
+        >
+          <div className="resize-handle-bar"></div>
         </div>
 
         {/* Main Content - Zero Scroll Layout */}

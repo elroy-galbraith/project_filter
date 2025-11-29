@@ -24,4 +24,6 @@ class Call(BaseModel):
     status: str
     location: str
     category: str
+    lat: float
+    lng: float
     nlp_extraction: Optional[NLPExtraction] = None
