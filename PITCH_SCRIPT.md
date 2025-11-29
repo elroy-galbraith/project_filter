@@ -53,13 +53,13 @@
 
 > Watch. This caller reports a downed utility pole blocking the hospital entrance. Confidence: 92 percent.
 
-**[ACTION: Point to the NLP extraction panel at the bottom]**
+**[ACTION: Point to the NLP intel row at the top - the three colored cards]**
 
 > But we don't stop at text. Layer two: **Local NLP**. We pipe that transcript into a locally-hosted LLM—Llama 3, running offline via Ollama.
 >
-> Because our ASR gets the words right, the LLM can extract structured logistics: Location—main road, Black River. Blocked access—hospital. Resource needed—JPS line crew.
+> Because our ASR gets the words right, the LLM can extract structured logistics. Look at the top row—Location: main road, Black River. Hazard: downed utility pole. Dispatch: JPS line crew.
 >
-> This call just became a dispatch order.
+> This call just became a dispatch order. Everything the dispatcher needs—visible at a glance, zero scrolling.
 
 **[ACTION: Click Call 2 - wait for spinner]**
 
@@ -97,15 +97,17 @@
 
 > But look at the bio-acoustic analysis. Pitch: 289 hertz—vocal panic. Energy at 0.11—shouting through wind and rain. Distress score: 94.
 
-**[ACTION: Point to the NLP extraction panel]**
+**[ACTION: Point to the pulsing red priority banner at the very top]**
+
+> The system instantly flags this for priority routing. Look at the banner—bio-acoustic distress detected. Pulsing red. Impossible to miss.
+
+**[ACTION: Point to the three red intel cards below the banner]**
 
 > And here's what's remarkable: even with partial transcription, the NLP layer extracts what it can. "Five a wi"—five people. "Pan di roof"—rooftop. "Pickney dem"—children present.
 >
-> Location: rooftop, cell tower New Hope. People: five, including children. Hazard: flood rising. Resource need: immediate evacuation, boat or helicopter.
-
-**[ACTION: Point to the red "Priority Routing" box]**
-
-> The system doesn't just flag this for human review. It hands the dispatcher a *structured rescue mission*.
+> Look at the intel cards—they're pulsing red, same priority signal. Location: rooftop, cell tower New Hope. People: five, including children. Hazard: flood rising. Dispatch: immediate evacuation, boat or helicopter.
+>
+> The system doesn't just flag this for human review. It hands the dispatcher a *structured rescue mission*—with visual urgency that demands immediate attention.
 >
 > That mother—and her four children—just jumped to the front of the line.
 
@@ -205,27 +207,30 @@ Caribbean Voices AI Hackathon 2025
 
 1. **"Everyone is homeless right now"** (0:15) - Real quote from Black River resident. Let it breathe.
 
-2. **"This call just became a dispatch order"** (1:10) - The NLP reveal. This is where judges see the ASR value.
+2. **"Everything the dispatcher needs—visible at a glance, zero scrolling"** (1:10) - The UX insight. Emergency triage demands instant visibility.
 
 3. **The spinner on Call 4** (1:30) - Build tension. Don't rush past it.
 
-4. **"Five people. Rooftop. Children present."** (2:00) - Show that even partial transcription yields actionable intel.
+4. **The pulsing red banner + cards** (1:50) - Visual urgency. Let the animation speak before you describe it.
 
-5. **"That mother—and her four children—just jumped to the front of the line"** (2:10) - Emotional peak.
+5. **"Structured rescue mission—with visual urgency that demands immediate attention"** (2:05) - Show that even partial transcription + bio-acoustics = actionable intel with priority flagging.
 
-6. **"Garbage in, garbage out"** (2:20) - The thesis. Why Caribbean ASR matters.
+6. **"That mother—and her four children—just jumped to the front of the line"** (2:10) - Emotional peak.
 
-7. **"Police, fire, ambulance. Any 119 dispatcher..."** (2:35) - The scope expansion. Show judges this isn't a one-time solution.
+7. **"Garbage in, garbage out"** (2:20) - The thesis. Why Caribbean ASR matters.
 
-8. **The closer** (2:50) - "We turn voices into rescue missions." Direct to camera. Conviction.
+8. **"Police, fire, ambulance. Any 119 dispatcher..."** (2:35) - The scope expansion. Show judges this isn't a one-time solution.
+
+9. **The closer** (2:50) - "We turn voices into rescue missions." Direct to camera. Conviction.
 
 ### Recording Tips
 
 - **Pace:** Slightly slower than conversational. You have time. Use it.
 - **Energy:** Start somber (Melissa context), build through the green calls showing NLP extraction, peak at Call 4, resolve with quiet determination.
 - **Eye contact:** When on camera, look at the lens, not the screen.
-- **Gestures:** When pointing at dashboard elements—especially the NLP extraction panel—be precise. This is your innovation reveal.
+- **Gestures:** When pointing at dashboard elements—especially the top NLP intel row and pulsing priority banner—be precise. This is your innovation reveal.
 - **The pause after Call 4 audio:** This silence is powerful. Don't fill it.
+- **Let the animation speak:** When Call 4 loads, give 1-2 seconds of silence to let judges see the pulsing red urgency before you describe it.
 - **"Garbage in, garbage out":** Say this like you're explaining something obvious that everyone's been missing.
 
 ### Backup: If Running Long
@@ -237,5 +242,5 @@ The impact still lands without it—but it's powerful if you can keep it.
 
 ### Backup: If Running Short
 
-Add after showing the NLP extraction on Call 1 (adds ~10 seconds):
-> "Standard ASR would have garbled 'Black River' into nonsense. Standard NLP can't extract a location from nonsense. Our pipeline succeeds because the foundation is solid."
+Add after showing the NLP intel row on Call 1 (adds ~10 seconds):
+> "In an emergency, dispatchers can't waste time scrolling. Everything critical—location, hazard, dispatch orders—visible at a glance. That's why the NLP intel is at the very top. Zero-scroll command center design."

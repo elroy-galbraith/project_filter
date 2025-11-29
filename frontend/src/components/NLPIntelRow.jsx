@@ -5,9 +5,23 @@ export default function NLPIntelRow({ call }) {
   const isDistress = call.is_distress;
 
   return (
-    <div className="intel-row">
-      {/* Location Intel */}
-      <div className={`intel-card ${isDistress ? 'urgent' : 'normal'}`}>
+    <>
+      {/* Priority Routing Banner - Only for Distress Calls */}
+      {isDistress && (
+        <div className="priority-banner">
+          <div className="priority-banner-icon">🚨</div>
+          <div className="priority-banner-text">
+            <div className="priority-banner-title">PRIORITY ROUTING</div>
+            <div className="priority-banner-subtitle">
+              Bio-Acoustic Distress Detected • Immediate Human Dispatcher Review Required
+            </div>
+          </div>
+        </div>
+      )}
+
+      <div className="intel-row">
+        {/* Location Intel */}
+        <div className={`intel-card ${isDistress ? 'urgent' : 'normal'}`}>
         <h4 className="intel-header">📍 LOCATION</h4>
         <div className="intel-primary">{nlp.location || 'Unknown'}</div>
         {nlp.landmark && (
@@ -33,5 +47,6 @@ export default function NLPIntelRow({ call }) {
         <div className="intel-primary">{nlp.resource_need || 'TBD'}</div>
       </div>
     </div>
+    </>
   );
 }

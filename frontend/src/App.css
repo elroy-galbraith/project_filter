@@ -891,3 +891,52 @@ hr {
     font-size: 2.5rem;
   }
 }
+
+/* Pulsing Red Glow Animation for Urgent Calls */
+@keyframes pulse-red {
+  0%, 100% {
+    box-shadow: 0 0 15px rgba(220, 38, 38, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 30px rgba(220, 38, 38, 0.6), 0 0 60px rgba(220, 38, 38, 0.3);
+  }
+}
+
+.intel-card.urgent {
+  animation: pulse-red 2s ease-in-out infinite;
+}
+
+/* Priority Routing Banner */
+.priority-banner {
+  background: linear-gradient(90deg, rgba(220, 38, 38, 0.3) 0%, rgba(220, 38, 38, 0.15) 100%);
+  border: 2px solid var(--border-red);
+  border-radius: 8px;
+  padding: 0.75rem 1.5rem;
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  animation: pulse-red 2s ease-in-out infinite;
+}
+
+.priority-banner-icon {
+  font-size: 1.5rem;
+}
+
+.priority-banner-text {
+  flex: 1;
+}
+
+.priority-banner-title {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--border-red);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 0.25rem;
+}
+
+.priority-banner-subtitle {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+}

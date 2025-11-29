@@ -24,10 +24,6 @@ export default function TranscriptCompact({ call }) {
       <div className="audio-player-compact">
         <audio controls src={`/${call.audio_file}`} />
       </div>
-
-      <div className="location-meta">
-        <strong>📍 Detected Location:</strong> {call.location}
-      </div>
     </div>
   );
 }
