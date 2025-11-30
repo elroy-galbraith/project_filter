@@ -1,19 +1,35 @@
 :root {
-  --bg-dark: #0f0f1a;
-  --bg-header-start: #1a1a2e;
-  --bg-header-end: #16213e;
-  --text-primary: #ffffff;
-  --text-secondary: #888;
-  --accent-cyan: #00d4ff;
-  --accent-red: #ff6b6b;
-  --status-green: #4ade80;
+  /* Caribbean Professional Theme */
+  --bg-dark: #0c1821;
+  --bg-card: #1b3a4b;
+  --bg-card-hover: #254b5e;
+  --bg-header-start: #1b3a4b;
+  --bg-header-end: #254b5e;
+
+  --accent-caribbean: #00c9b7;
+  --accent-gold: #f0b429;
+  --success-green: #10b981;
+  --warning-amber: #f59e0b;
+  --danger-red: #ef4444;
+  --danger-glow: rgba(239, 68, 68, 0.3);
+
+  --text-primary: #e2e8f0;
+  --text-secondary: #94a3b8;
+  --border-subtle: #2d4a5e;
+
+  /* Gradient variations */
+  --gradient-red-start: rgba(31, 18, 21, 0.9);
+  --gradient-red-end: rgba(45, 22, 25, 0.9);
+  --gradient-green-start: rgba(15, 31, 19, 0.6);
+  --gradient-green-end: rgba(19, 45, 23, 0.6);
+
+  /* Legacy mappings for backwards compatibility */
+  --accent-cyan: #00c9b7;
+  --accent-red: #ef4444;
+  --status-green: #10b981;
   --status-green-bg: #0f3d0f;
-  --border-red: #dc2626;
-  --border-green: #22c55e;
-  --gradient-red-start: #1f1215;
-  --gradient-red-end: #2d1619;
-  --gradient-green-start: #0f1f13;
-  --gradient-green-end: #132d17;
+  --border-red: #ef4444;
+  --border-green: #10b981;
 }
 
 * {
@@ -202,10 +218,16 @@ body {
 }
 
 .metric-card {
-  background: #1a1a2e;
+  background: linear-gradient(135deg, var(--bg-card) 0%, var(--bg-card-hover) 100%);
   padding: 1rem;
   border-radius: 8px;
-  border: 1px solid #333;
+  border: 1px solid var(--border-subtle);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.metric-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 201, 183, 0.15);
 }
 
 .metric-label {
@@ -260,11 +282,11 @@ audio {
 }
 
 .transcript-box {
-  background: #1a1a2e;
+  background: linear-gradient(135deg, var(--bg-card) 0%, var(--bg-card-hover) 100%);
   padding: 1rem;
   border-radius: 8px;
   margin-bottom: 1rem;
-  border: 1px solid #333;
+  border: 1px solid var(--border-subtle);
 }
 
 .transcript-box.success {
@@ -609,19 +631,20 @@ hr {
 }
 
 .intel-card {
-  background: #1a1a2e;
+  background: linear-gradient(135deg, var(--bg-card) 0%, var(--bg-card-hover) 100%);
   padding: 1rem;
   border-radius: 8px;
   border: 2px solid;
-  transition: transform 0.2s ease;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
   display: flex;
   flex-direction: column;
+  box-shadow: 0 2px 8px rgba(0, 201, 183, 0.08);
 }
 
 .intel-card.urgent {
-  border-color: var(--border-red);
-  background: linear-gradient(135deg, rgba(31, 18, 21, 0.8) 0%, rgba(45, 22, 25, 0.8) 100%);
-  box-shadow: 0 0 15px rgba(220, 38, 38, 0.3);
+  border-color: var(--danger-red);
+  background: linear-gradient(135deg, rgba(45, 20, 20, 0.95) 0%, rgba(60, 25, 25, 0.95) 100%);
+  box-shadow: 0 0 20px var(--danger-glow), 0 0 40px rgba(239, 68, 68, 0.2);
 }
 
 .intel-card.normal {
@@ -644,9 +667,10 @@ hr {
   font-weight: 700;
   text-transform: uppercase;
   margin-bottom: 0.5rem;
-  opacity: 0.7;
+  color: var(--accent-gold);
   letter-spacing: 0.5px;
   flex-shrink: 0;
+  text-shadow: 0 0 8px rgba(240, 180, 41, 0.3);
 }
 
 .intel-primary {
@@ -688,15 +712,17 @@ hr {
 
 /* Transcript Compact */
 .transcript-compact {
-  background: #1a1a2e;
+  background: linear-gradient(135deg, var(--bg-card) 0%, var(--bg-card-hover) 100%);
   padding: 1.25rem;
   border-radius: 8px;
-  border: 1px solid #333;
+  border: 1px solid var(--border-subtle);
+  box-shadow: 0 2px 8px rgba(0, 201, 183, 0.08);
 }
 
 .compact-header {
   font-size: 0.85rem;
   font-weight: 700;
+  color: var(--accent-gold);
   text-transform: uppercase;
   margin-bottom: 1rem;
   opacity: 0.8;
@@ -781,10 +807,11 @@ hr {
 
 /* Bio-Acoustic Compact */
 .bioacoustic-compact {
-  background: #1a1a2e;
+  background: linear-gradient(135deg, var(--bg-card) 0%, var(--bg-card-hover) 100%);
   padding: 1.25rem;
   border-radius: 8px;
-  border: 1px solid #333;
+  border: 1px solid var(--border-subtle);
+  box-shadow: 0 2px 8px rgba(0, 201, 183, 0.08);
 }
 
 .distress-meter-compact {
@@ -923,10 +950,10 @@ hr {
 /* Pulsing Red Glow Animation for Urgent Calls */
 @keyframes pulse-red {
   0%, 100% {
-    box-shadow: 0 0 15px rgba(220, 38, 38, 0.3);
+    box-shadow: 0 0 20px var(--danger-glow), 0 0 40px rgba(239, 68, 68, 0.2);
   }
   50% {
-    box-shadow: 0 0 30px rgba(220, 38, 38, 0.6), 0 0 60px rgba(220, 38, 38, 0.3);
+    box-shadow: 0 0 35px var(--danger-glow), 0 0 70px rgba(239, 68, 68, 0.3), 0 0 100px rgba(239, 68, 68, 0.15);
   }
 }
 
@@ -936,8 +963,8 @@ hr {
 
 /* Priority Routing Banner */
 .priority-banner {
-  background: linear-gradient(90deg, rgba(220, 38, 38, 0.3) 0%, rgba(220, 38, 38, 0.15) 100%);
-  border: 2px solid var(--border-red);
+  background: linear-gradient(90deg, rgba(239, 68, 68, 0.25) 0%, rgba(239, 68, 68, 0.12) 100%);
+  border: 2px solid var(--danger-red);
   border-radius: 8px;
   padding: 0.75rem 1.5rem;
   margin-bottom: 1rem;
@@ -945,6 +972,7 @@ hr {
   align-items: center;
   gap: 1rem;
   animation: pulse-red 2s ease-in-out infinite;
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.2);
 }
 
 .priority-banner-icon {
@@ -958,10 +986,11 @@ hr {
 .priority-banner-title {
   font-size: 0.9rem;
   font-weight: 700;
-  color: var(--border-red);
+  color: var(--danger-red);
   text-transform: uppercase;
   letter-spacing: 1px;
   margin-bottom: 0.25rem;
+  text-shadow: 0 0 10px rgba(239, 68, 68, 0.5);
 }
 
 .priority-banner-subtitle {
@@ -980,13 +1009,14 @@ hr {
 }
 
 .leaflet-container {
-  background: #0f0f1a;
+  background: var(--bg-dark);
   border-radius: 10px;
 }
 
-/* Dark theme for map tiles */
+/* Ocean theme for map tiles - Caribbean Professional */
 .leaflet-tile {
-  filter: brightness(0.6) invert(1) contrast(3) hue-rotate(200deg) saturate(0.3) invert(1);
+  filter: brightness(0.5) saturate(0.7) hue-rotate(180deg) contrast(1.1);
+  opacity: 0.85;
 }
 
 /* Custom marker styling */
@@ -1012,16 +1042,17 @@ hr {
 
 /* Map popup styling */
 .leaflet-popup-content-wrapper {
-  background: #1a1a2e;
+  background: linear-gradient(135deg, var(--bg-card) 0%, var(--bg-card-hover) 100%);
   color: var(--text-primary);
-  border: 2px solid #333;
+  border: 2px solid var(--border-subtle);
   border-radius: 8px;
   padding: 0;
+  box-shadow: 0 4px 16px rgba(0, 201, 183, 0.2);
 }
 
 .leaflet-popup-tip {
-  background: #1a1a2e;
-  border: 2px solid #333;
+  background: var(--bg-card);
+  border: 2px solid var(--border-subtle);
 }
 
 .map-popup {
@@ -1090,12 +1121,14 @@ hr {
   position: absolute;
   bottom: 20px;
   right: 20px;
-  background: rgba(26, 26, 46, 0.95);
-  border: 2px solid #333;
+  background: linear-gradient(135deg, rgba(27, 58, 75, 0.98) 0%, rgba(37, 75, 94, 0.98) 100%);
+  border: 2px solid var(--border-subtle);
   border-radius: 8px;
   padding: 0.75rem;
   z-index: 1000;
   min-width: 180px;
+  box-shadow: 0 4px 16px rgba(0, 201, 183, 0.15);
+  backdrop-filter: blur(8px);
 }
 
 .map-legend-title {
@@ -1134,23 +1167,26 @@ hr {
   background: var(--border-green);
 }
 
-/* Leaflet controls styling for dark theme */
+/* Leaflet controls styling - Caribbean theme */
 .leaflet-control-zoom a {
-  background: #1a1a2e;
+  background: var(--bg-card);
   color: var(--text-primary);
-  border: 1px solid #333;
+  border: 1px solid var(--border-subtle);
+  transition: all 0.2s ease;
 }
 
 .leaflet-control-zoom a:hover {
-  background: #2a2a3e;
+  background: var(--bg-card-hover);
+  box-shadow: 0 0 8px rgba(0, 201, 183, 0.3);
 }
 
 .leaflet-control-attribution {
-  background: rgba(26, 26, 46, 0.8);
+  background: rgba(27, 58, 75, 0.9);
   color: var(--text-secondary);
   font-size: 0.7rem;
+  border-radius: 4px;
 }
 
 .leaflet-control-attribution a {
-  color: var(--accent-cyan);
+  color: var(--accent-caribbean);
 }
