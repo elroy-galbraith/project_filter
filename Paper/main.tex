@@ -6,6 +6,7 @@
 \usepackage[T1]{fontenc}
 \usepackage{amsmath,amssymb}
 \usepackage{graphicx}
+\usepackage{url}
 \usepackage{hyperref}
 \usepackage{booktabs}
 \usepackage{array}
@@ -13,6 +14,7 @@
 \usepackage{geometry}
 \usepackage{fancyvrb}
 \usepackage{listings}
+\usepackage{authblk}
 
 % Page geometry
 \geometry{margin=1in}
@@ -22,8 +24,15 @@
     colorlinks=true,
     linkcolor=blue,
     citecolor=blue,
-    urlcolor=blue
+    urlcolor=blue,
+    breaklinks=true
 }
+
+% URL line breaking
+\usepackage{xurl}
+
+% Bibliography formatting - helps with overfull boxes
+\emergencystretch=1em
 
 % Code listings setup
 \lstset{

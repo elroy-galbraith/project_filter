@@ -8,15 +8,16 @@ import os
 from models import Call
 from data import CALL_LOG
 
-app = FastAPI(title="Project Filter API", version="1.0.0")
+app = FastAPI(title="TRIDENT API", version="1.0.0")
 
 # CORS middleware for local React dev
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173", "http://localhost:3000"],
+    allow_origins=["http://localhost:5173", "http://localhost:3000", "http://127.0.0.1:5173"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
+    expose_headers=["*"],
 )
 
 # Serve audio files from assets directory
@@ -28,7 +29,7 @@ if os.path.exists(assets_path):
 @app.get("/")
 def root():
     return {
-        "message": "Project Filter API - Crisis Triage System",
+        "message": "TRIDENT API - Triage via Dual-stream Emergency Natural language and Tone",
         "docs": "/docs",
         "endpoints": {
             "calls": "/api/calls",

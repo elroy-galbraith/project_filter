@@ -17,3 +17,21 @@ Low ($<$0.7) & High ($>$0.7) & \textbf{CRITICAL:} Immediate human dispatch, flag
 \caption{Triage decision matrix based on ASR confidence and bio-acoustic distress}
 \label{tab:triage_matrix}
 \end{table}
+
+\subsubsection{Dispatcher Interface Examples}
+
+Figure~\ref{fig:ui_low_risk} and Figure~\ref{fig:ui_high_risk} illustrate the dispatcher interface for contrasting triage scenarios. The interface presents real-time triage indicators, extracted location metadata, and confidence scores to support rapid human decision-making.
+
+\begin{figure}[ht]
+\centering
+\includegraphics[width=0.85\textwidth]{figures/Screenshot 2025-11-30 at 8.41.20.png}
+\caption{Dispatcher interface for a low-risk scenario (STANDARD triage). The system displays high ASR confidence with successfully extracted location metadata and low distress indicators, allowing the call to queue normally with automated metadata available to the dispatcher.}
+\label{fig:ui_low_risk}
+\end{figure}
+
+\begin{figure}[ht]
+\centering
+\includegraphics[width=0.85\textwidth]{figures/Screenshot 2025-11-30 at 8.42.43.png}
+\caption{Dispatcher interface for a high-risk scenario (CRITICAL or URGENT triage). Elevated distress markers and reduced ASR confidence trigger immediate priority routing, with visual indicators alerting dispatchers to potential dialect shift or acute crisis requiring immediate human attention.}
+\label{fig:ui_high_risk}
+\end{figure}
