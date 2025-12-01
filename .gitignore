@@ -138,3 +138,28 @@ pnpm-lock.yaml
 secrets/
 credentials/
 *.secret
+
+# LaTeX Build Artifacts
+*.aux
+*.bbl
+*.blg
+*.out
+*.log
+*.toc
+*.lof
+*.lot
+*.fls
+*.fdb_latexmk
+*.synctex.gz
+*.nav
+*.snm
+*.vrb
+*.run.xml
+*-blx.bib
+*.bcf
+*.idx
+*.ilg
+*.ind
+
+# Keep only the final PDF
+# Paper/*.pdf  # Uncomment this if you don't want to commit PDFs
