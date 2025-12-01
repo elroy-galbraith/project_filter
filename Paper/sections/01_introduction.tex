@@ -4,7 +4,13 @@ When a caller dials emergency services during a crisis, the interaction between 
 
 \textbf{This paper presents TRIDENT (Triage via Dual-stream Emergency Natural language and Tone), an architectural framework} designed not to eliminate ASR errors on Caribbean speech---an unrealistic goal given current technology---but to build a triage system that remains functional when such errors occur. \textbf{We frame this work as a position paper and system proposal}, establishing theoretical foundations and design rationale while acknowledging that end-to-end empirical validation on Caribbean emergency calls remains future work.
 
-\textbf{Our central and novel contribution is reframing low ASR confidence from a system failure into a triage signal that, combined with bio-acoustic distress indicators, routes calls appropriately to human dispatchers.} This insight---that ASR uncertainty $\times$ acoustic stress fusion provides a robust triage mechanism---represents a conceptual shift from treating accent-induced errors as bugs to treating them as features that correlate with genuine caller distress.
+\textbf{Our central contribution is a three-dimensional triage framework} that integrates ASR confidence, bio-acoustic distress, and semantic content severity. Two complementary insights motivate this design:
+
+\begin{enumerate}
+    \item \textbf{Uncertainty as signal:} Low ASR confidence, rather than representing system failure, serves as a valuable triage indicator---particularly when combined with elevated vocal distress markers indicating a caller in crisis whose speech may have shifted toward basilectal registers. This reframes accent-induced transcription errors from bugs into features that correlate with genuine caller distress.
+    
+    \item \textbf{Content beyond voice:} Trained first responders, medical professionals, and composed bystanders may report life-threatening emergencies without elevated vocal stress. Semantic analysis of transcript content captures urgency that paralinguistic features alone would miss---ensuring that ``children trapped in burning building,'' spoken calmly, receives appropriate priority.
+\end{enumerate}
 
 The architecture addresses four gaps in existing emergency AI systems: (1) reliance on cloud-dependent, accent-agnostic ASR; (2) exclusive focus on textual features, ignoring paralinguistic stress signals; (3) no consideration of dialect continua or stress-induced register shifting; and (4) inability to function during infrastructure failures that commonly accompany disasters.
 

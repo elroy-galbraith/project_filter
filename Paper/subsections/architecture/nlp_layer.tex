@@ -42,3 +42,90 @@ LOCATION: ``[UNCERTAIN] road, near gas station''; HAZARD: ``fire (house burning)
 \end{table}
 
 When confidence is very low ($<$0.4), the NLP layer produces minimal structured output and flags the call for immediate human review, relying on the bio-acoustic layer to provide triage guidance.
+
+\subsubsection{Content Severity Scoring}
+
+Beyond entity extraction, the NLP layer computes a \textbf{Content Severity Score} ($S_c \in [0,100]$) that quantifies the urgency implied by the \textit{semantic content} of the transcript, independent of how the caller sounds. This addresses a critical gap: a trained first responder or composed bystander may report a mass casualty event in a calm voice, producing low bio-acoustic distress despite extremely urgent content.
+
+\textbf{Classification-Based Approach.} Rather than brittle keyword matching, we leverage the LLM's semantic understanding to classify transcript content along four dimensions. This approach offers critical advantages for Caribbean speech: the model can recognize that ``mi granmodda drop dung an she nah move'' conveys the same urgency as ``my grandmother collapsed and she's not moving'' without requiring an exhaustive enumeration of creole variants. The LLM also handles negation (``no one is trapped''), indirect references (``she nine months pregnant'' $\rightarrow$ vulnerable), and context-dependent interpretation that keyword matching cannot capture.
+
+The LLM outputs structured classifications according to the following schema:
+
+\begin{verbatim}
+{
+  "hazard_category": "violent_crime" | "medical" | "fire" | 
+                     "flood" | "traffic" | "infrastructure" | "other",
+  "life_threat_level": "imminent" | "potential" | "none",
+  "vulnerable_population": true | false,
+  "situation_status": "escalating" | "stable" | "resolved",
+  "persons_affected": <integer>
+}
+\end{verbatim}
+
+A deterministic scoring function then maps these classifications to the Content Severity Score, separating the flexibility of neural language understanding from the interpretability of rule-based scoring:
+
+\begin{equation}
+S_c = \min\left(100,\ S_{\text{hazard}} + S_{\text{threat}} + S_{\text{vuln}} + S_{\text{scale}}\right)
+\label{eq:content_severity}
+\end{equation}
+
+\textbf{Component 1: Hazard Category ($S_{\text{hazard}}$).} Different emergency types carry inherent urgency levels:
+
+\begin{table}[ht]
+\centering
+\small
+\begin{tabular}{@{}ll@{}}
+\toprule
+\textbf{Hazard Category} & \textbf{Score} \\ \midrule
+\texttt{violent\_crime} & 30 \\
+\texttt{medical} & 25 \\
+\texttt{fire} & 25 \\
+\texttt{flood} & 20 \\
+\texttt{traffic} & 15 \\
+\texttt{infrastructure} & 10 \\
+\texttt{other} & 5 \\ \bottomrule
+\end{tabular}
+\caption{Hazard category severity scores}
+\label{tab:hazard_weights}
+\end{table}
+
+\textbf{Component 2: Life-Threat Level ($S_{\text{threat}}$).} The LLM classifies the immediacy of danger to life based on semantic understanding of the full transcript context:
+
+\begin{itemize}
+    \item \texttt{imminent}: Active, immediate threat to life (trapped, not breathing, active violence, drowning) $\rightarrow$ +30
+    \item \texttt{potential}: Situation could become life-threatening (injuries, spreading fire, chest pain) $\rightarrow$ +15
+    \item \texttt{none}: No apparent threat to life $\rightarrow$ +0
+\end{itemize}
+
+\textbf{Component 3: Vulnerable Population ($S_{\text{vuln}}$).} Boolean classification indicating presence of children, elderly, pregnant individuals, or persons with disabilities. If \texttt{true} $\rightarrow$ +15. This reflects both ethical prioritization and reduced self-rescue capacity.
+
+\textbf{Component 4: Scale and Escalation ($S_{\text{scale}}$).} Combines two factors:
+\begin{itemize}
+    \item \texttt{persons\_affected}: +5 per person, capped at +20
+    \item \texttt{situation\_status = "escalating"}: +10 (fire spreading, water rising, more vehicles involved)
+\end{itemize}
+
+\textbf{Example severity calculations:}
+
+\begin{table}[ht]
+\centering
+\small
+\begin{tabular}{@{}p{0.38\textwidth}p{0.35\textwidth}c@{}}
+\toprule
+\textbf{Transcript} & \textbf{LLM Classification} & \textbf{$S_c$} \\ \midrule
+``Pothole on Nelson Street'' & 
+\texttt{infrastructure, none, false, stable, 0} & 10 \\[0.5em]
+``Car accident, one person injured'' & 
+\texttt{traffic, potential, false, stable, 1} & 35 \\[0.5em]
+``House fire, spreading to neighbor's yard'' & 
+\texttt{fire, potential, false, escalating, 0} & 50 \\[0.5em]
+``Mi granmodda drop dung, she nah breathe'' & 
+\texttt{medical, imminent, true, stable, 1} & 75 \\[0.5em]
+``Pickney dem trap inna di fire'' & 
+\texttt{fire, imminent, true, stable, 2+} & 80 \\ \bottomrule
+\end{tabular}
+\caption{Content severity scoring via LLM classification. The model's semantic understanding captures urgency from both standard English and Caribbean creole variants without explicit keyword enumeration.}
+\label{tab:severity_examples}
+\end{table}
+
+The Content Severity Score provides the third dimension of the triage decision matrix (Section~\ref{sec:triage_matrix}), ensuring that semantically urgent calls receive priority routing even when vocal distress markers are low.

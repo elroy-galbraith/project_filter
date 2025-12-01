@@ -1,43 +1,80 @@
 \subsection{Layer 3: Bio-Acoustic Distress Detection}
 
-The bio-acoustic layer operates on raw audio, independent of ASR success, extracting features correlated with psychological distress. Based on the vocal stress literature \cite{schmalz2025, vanpuyvelde2018}, we focus on two primary features:
+The bio-acoustic layer operates on raw audio, independent of ASR success, extracting features correlated with psychological distress. Based on the vocal stress literature \cite{schmalz2025, vanpuyvelde2018, veiga2025}, we focus on features that capture physiological arousal through vocal production changes.
 
-\textbf{Feature Extraction (using librosa):}
+\subsubsection{Feature Extraction}
+
+Using librosa, we extract the following acoustic features:
 
 \begin{enumerate}
     \item \textbf{Fundamental Frequency (F0):} Mean pitch extracted via autocorrelation method
     \begin{itemize}
-        \item Typical baseline: 85-180 Hz (male), 165-255 Hz (female)
-        \item Stress indicator: Elevation $>$20\% above speaker baseline
+        \item Typical baseline: 85--180 Hz (male), 165--255 Hz (female) \cite{titze1989}
+        \item Stress indicator: Elevation above speaker baseline
+    \end{itemize}
+
+    \item \textbf{F0 Coefficient of Variation (CV):} Pitch instability measure
+    \begin{itemize}
+        \item Computed as $CV = \sigma_{F0} / \mu_{F0}$
+        \item Normalizes for baseline differences across speakers
+        \item Stress indicator: $CV > 0.3$ suggests vocal instability
     \end{itemize}
 
     \item \textbf{Energy (RMS amplitude):} Mean intensity across utterance
     \begin{itemize}
-        \item Normalized to 0-1 scale relative to recording gain
-        \item Stress indicator: energy\_avg $>$ 0.05 (normalized units)
+        \item Normalized to 0--1 scale relative to recording gain
+        \item Stress indicator: Elevated intensity during distress vocalizations
+    \end{itemize}
+
+    \item \textbf{Jitter:} Cycle-to-cycle variation in F0 period
+    \begin{itemize}
+        \item Relatively independent of prosodic patterns \cite{vanpuyvelde2018}
+        \item Pathology threshold: $>$1.04\% \cite{boersma2013}
     \end{itemize}
 \end{enumerate}
 
-\textbf{Distress Score Calculation:}
+\subsubsection{Distress Score Calculation}
 
-The distress score combines pitch and energy deviations into a single metric:
+The distress score combines multiple acoustic indicators into a composite metric. We weight features according to their documented reliability and sex-independence:
 
 \begin{align}
-\text{distress\_score} &= w_{\text{pitch}} \cdot \text{pitch\_component} + w_{\text{energy}} \cdot \text{energy\_component} \\
-\text{where:} \nonumber \\
-\text{pitch\_component} &= \min\left(1.0, \max\left(0, \frac{\bar{F_0} - 180}{120}\right)\right) \\
-\text{energy\_component} &= \min\left(1.0, \frac{\bar{E}}{0.1}\right) \\
-w_{\text{pitch}} &= 0.6 \quad \text{(based on literature showing F0 as most reliable marker)} \nonumber \\
-w_{\text{energy}} &= 0.4 \nonumber
+D &= w_{\text{pitch}} \cdot P + w_{\text{var}} \cdot V + w_{\text{energy}} \cdot E + w_{\text{jitter}} \cdot J
+\label{eq:distress}
 \end{align}
 
-Where $\bar{F_0}$ is mean fundamental frequency in Hz and $\bar{E}$ is mean RMS energy (normalized).
+\noindent where:
 
-\textbf{Threshold Rationale:}
+\begin{align}
+P &= \min\left(1.0, \max\left(0, \frac{\bar{F_0} - 180}{120}\right)\right) & \text{(pitch elevation)} \\
+V &= \min\left(1.0, \frac{CV_{F0}}{0.5}\right) & \text{(pitch instability)} \\
+E &= \min\left(1.0, \frac{\bar{E}}{0.1}\right) & \text{(energy)} \\
+J &= \min\left(1.0, \frac{\text{jitter}}{0.02}\right) & \text{(perturbation)}
+\end{align}
+
+The weights reflect relative reliability from the literature:
 \begin{itemize}
-    \item ``High Distress'' threshold: distress\_score $>$ 0.7
-    \item ``Moderate Distress'' threshold: 0.4 $<$ distress\_score $\leq$ 0.7
-    \item ``Low Distress'' threshold: distress\_score $\leq$ 0.4
+    \item $w_{\text{pitch}} = 0.30$ --- F0 elevation is the most consistent stress marker but is sex-dependent
+    \item $w_{\text{var}} = 0.35$ --- F0 coefficient of variation is sex-normalized and robust
+    \item $w_{\text{energy}} = 0.20$ --- intensity elevation accompanies distress
+    \item $w_{\text{jitter}} = 0.15$ --- perturbation measures are prosody-independent
 \end{itemize}
 
-These thresholds are calibrated against Van Puyvelde et al.'s \cite{vanpuyvelde2018} findings on F0 ranges in emergency versus baseline speech. The 180 Hz baseline in the pitch component represents an approximate population mean; see Limitations for discussion of gender normalization requirements.
+\subsubsection{Threshold Classification}
+
+\begin{itemize}
+    \item \textbf{High Distress:} $D > 0.5$
+    \item \textbf{Low Distress:} $D \leq 0.5$
+\end{itemize}
+
+These thresholds are calibrated against Van Puyvelde et al.'s \cite{vanpuyvelde2018} findings on vocal markers in emergency versus baseline speech.
+
+\subsubsection{Sex Differences in Baseline F0}
+\label{sec:sex_differences}
+
+A methodological consideration is the substantial difference in baseline fundamental frequency between male speakers (typically 85--175 Hz) and female speakers (165--270 Hz) \cite{titze1989, traunmuller1995}. Setting a single absolute F0 threshold for distress detection risks differential sensitivity: a female speaker might cross a high absolute threshold with moderate stress, while a male speaker might require extreme distress to reach the same value.
+
+We address this limitation through two strategies. First, we prioritize \textbf{normalized and relative measures}: the coefficient of variation ($CV = \sigma_{F0} / \mu_{F0}$) captures pitch instability independent of baseline, and jitter measures cycle-to-cycle perturbations that research shows are ``relatively independent from prosodic patterns'' \cite{vanpuyvelde2018}. Second, we reduce the weight assigned to absolute F0 elevation relative to normalized measures.
+
+Importantly, research on psychosocial stress indicates that the \textit{direction} and \textit{pattern} of vocal changes under stress show ``striking parallels in men and women'' \cite{pisanski2018}---both sexes exhibit increased pitch mean, minimum, and variation during acute stress. The challenge is not that stress manifests differently, but that baseline values differ.
+
+\textbf{Limitation.} The current threshold values are derived from literature on non-Caribbean, predominantly Western populations. Automatic sex identification from voice is itself an imperfect classifier, particularly for voices near the overlap region of male and female F0 distributions. Rather than introduce a potentially error-prone sex classification step, we employ sex-normalized features (CV, jitter) weighted more heavily than absolute F0. A validation study with sex-stratified analysis on Caribbean emergency calls is essential to: (1) calibrate population-appropriate thresholds, (2) confirm that normalized measures maintain sensitivity across speaker demographics, and (3) determine whether Caribbean populations exhibit different baseline distributions requiring adjustment.

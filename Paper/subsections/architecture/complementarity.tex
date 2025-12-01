@@ -1,13 +1,24 @@
 \subsection{The Complementarity Principle}
 
-The theoretical foundation for our multi-layer design rests on what we term the \textbf{Complementarity Principle}: the conditions that degrade ASR performance (high stress, code-switching to basilect, elevated emotion) are precisely the conditions that elevate bio-acoustic distress signals.
+The theoretical foundation for our multi-layer design rests on what we term the \textbf{Complementarity Principle}: the three triage dimensions capture distinct failure modes and urgency signals that compensate for each other's blind spots.
 
-This creates a natural redundancy:
+\textbf{Dimension 1: ASR Confidence.} The conditions that degrade ASR performance (high stress, code-switching to basilect, environmental noise) are precisely the conditions that often accompany genuine emergencies. Low confidence is not merely a technical limitation---it correlates with caller distress.
+
+\textbf{Dimension 2: Bio-Acoustic Distress.} Vocal stress markers (elevated pitch, intensity, instability) provide a parallel assessment channel that operates on raw audio, independent of transcription success. A caller whose speech is entirely unintelligible to ASR will still produce detectable distress signals.
+
+\textbf{Dimension 3: Content Severity.} Semantic analysis of transcript content captures urgency that vocal characteristics may miss. Trained professionals, repeat callers, and composed bystanders often report critical emergencies without elevated vocal stress---their calm delivery masks the urgency that only content analysis reveals.
+
+This creates a robust triage space with complementary coverage:
+
 \begin{itemize}
-    \item \textbf{High ASR confidence + Low distress:} Standard call, NLP extraction reliable
-    \item \textbf{High ASR confidence + High distress:} Urgent but comprehensible, prioritize
-    \item \textbf{Low ASR confidence + Low distress:} Technical issue (noise, distance), re-prompt
-    \item \textbf{Low ASR confidence + High distress:} Critical combination---caller in crisis, speech shifted to basilect, route to human dispatcher immediately
+    \item \textbf{High Confidence + Low Distress + Low Severity:} Routine call, automated processing appropriate
+    \item \textbf{High Confidence + Low Distress + High Severity:} The composed reporter---urgent content from a calm caller requires priority handling despite absent vocal stress markers
+    \item \textbf{High Confidence + High Distress + Low Severity:} Anxious caller, minor issue---human review to de-escalate
+    \item \textbf{High Confidence + High Distress + High Severity:} Confirmed emergency, all signals aligned
+    \item \textbf{Low Confidence + Low Distress + Low Severity:} Likely technical issue, re-prompt or review
+    \item \textbf{Low Confidence + Low Distress + High Severity:} Garbled but fragments suggest urgency---human ears needed
+    \item \textbf{Low Confidence + High Distress + Low Severity:} Distressed caller, unintelligible speech---priority human review
+    \item \textbf{Low Confidence + High Distress + High Severity:} Maximum urgency---all indicators elevated, immediate dispatch
 \end{itemize}
 
-The fourth quadrant---low confidence combined with high distress---represents our key insight. Rather than treating this as a system failure, we interpret it as valuable triage information: this caller needs immediate human attention precisely \emph{because} automated systems cannot process their speech.
+Two cells represent our key insights. The \textbf{Low Confidence + High Distress} cases (regardless of content) capture callers in crisis whose speech has shifted toward basilectal registers---we interpret ASR failure combined with vocal stress as valuable triage information rather than system failure. The \textbf{High Confidence + Low Distress + High Severity} cell captures the complementary blind spot: the trained first responder or composed bystander whose calm voice belies the urgency of their report. Together, these insights ensure that neither paralinguistic nor semantic signals alone determine routing.

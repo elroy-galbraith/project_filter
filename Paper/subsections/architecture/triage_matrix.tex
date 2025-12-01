@@ -1,37 +1,68 @@
 \subsection{Triage Decision Matrix}
+\label{sec:triage_matrix}
 
-The final routing decision combines ASR confidence and distress score according to the following matrix:
+The final routing decision integrates three independent signals: ASR confidence (transcription reliability), bio-acoustic distress (caller physiological state), and content severity (semantic urgency of the message). This three-dimensional approach addresses a critical limitation of two-dimensional triage: a calm, composed caller reporting a mass casualty event would be under-prioritized if routing relied solely on vocal distress markers.
+
+\subsubsection{Three-Dimensional Triage Space}
+
+Each call is mapped to a point in triage space defined by:
+
+\begin{itemize}
+    \item \textbf{ASR Confidence} ($C$): High ($\geq 0.7$) or Low ($< 0.7$)
+    \item \textbf{Bio-Acoustic Distress} ($D$): High ($> 0.5$) or Low ($\leq 0.5$)
+    \item \textbf{Content Severity} ($S_c$): High ($\geq 50$) or Low ($< 50$)
+\end{itemize}
+
+The $2 \times 2 \times 2$ combination yields eight triage cells, shown in Table~\ref{tab:triage_matrix_3d}.
 
 \begin{table}[ht]
 \centering
-\begin{tabular}{@{}lll@{}}
+\small
+\begin{tabular}{@{}ccclp{4.5cm}@{}}
 \toprule
-\textbf{ASR Confidence} & \textbf{Distress Score} & \textbf{Triage Decision} \\ \midrule
-High ($\geq$0.7) & Low ($\leq$0.4) & \textbf{STANDARD:} Queue with extracted metadata \\
-High ($\geq$0.7) & Moderate (0.4-0.7) & \textbf{ELEVATED:} Priority queue, human review recommended \\
-High ($\geq$0.7) & High ($>$0.7) & \textbf{URGENT:} Immediate human dispatch \\
-Low ($<$0.7) & Low ($\leq$0.4) & \textbf{UNCLEAR:} Re-prompt caller, check audio quality \\
-Low ($<$0.7) & Moderate (0.4-0.7) & \textbf{PRIORITY REVIEW:} Human dispatcher reviews audio \\
-Low ($<$0.7) & High ($>$0.7) & \textbf{CRITICAL:} Immediate human dispatch, flag as potential dialect reversion \\ \bottomrule
+\textbf{ASR Conf.} & \textbf{Distress} & \textbf{Content} & \textbf{Triage} & \textbf{Rationale} \\ \midrule
+High & Low & Low & \textbf{STANDARD} & Routine call, clear transcription \\
+High & Low & High & \textbf{ELEVATED} & Calm reporter, urgent content$^*$ \\
+High & High & Low & \textbf{ELEVATED} & Distressed caller, minor content \\
+High & High & High & \textbf{URGENT} & Clear emergency, confirmed urgent \\
+Low & Low & Low & \textbf{UNCLEAR} & Possible technical issue \\
+Low & Low & High & \textbf{PRIORITY} & Fragments suggest urgency \\
+Low & High & Low & \textbf{PRIORITY} & Distress despite poor transcription$^\dagger$ \\
+Low & High & High & \textbf{CRITICAL} & Maximum urgency, all indicators elevated \\ \bottomrule
 \end{tabular}
-\caption{Triage decision matrix based on ASR confidence and bio-acoustic distress}
-\label{tab:triage_matrix}
+\caption{Three-dimensional triage decision matrix. $^*$Addresses trained responder/composed bystander scenario. $^\dagger$Preserves original insight regarding stress-induced dialect shift.}
+\label{tab:triage_matrix_3d}
 \end{table}
+
+\subsubsection{Triage Categories}
+
+\begin{description}
+    \item[CRITICAL:] Immediate human dispatch. Highest priority queue position.
+    \item[URGENT:] Immediate human dispatch. High priority.
+    \item[PRIORITY:] Human dispatcher reviews audio promptly. Flagged for potential dialect reversion or content ambiguity.
+    \item[ELEVATED:] Priority queue placement. Human review recommended.
+    \item[STANDARD:] Normal queue with extracted metadata available to dispatcher.
+    \item[UNCLEAR:] System prompts caller for clarification or flags for audio quality review.
+\end{description}
+
+\subsubsection{Preserving the Core Insight}
+
+The original two-dimensional insight---that low ASR confidence combined with high vocal distress signals a caller in crisis whose speech has shifted toward basilectal registers---remains encoded in the matrix. The Low/High/Low and Low/High/High cells both route to priority or critical handling. The addition of Content Severity provides a parallel pathway for urgent calls that would otherwise be missed: the High/Low/High cell captures the trained professional or composed bystander reporting a genuine emergency without elevated vocal stress markers.
 
 \subsubsection{Dispatcher Interface Examples}
 
-Figure~\ref{fig:ui_low_risk} and Figure~\ref{fig:ui_high_risk} illustrate the dispatcher interface for contrasting triage scenarios. The interface presents real-time triage indicators, extracted location metadata, and confidence scores to support rapid human decision-making.
+Figure~\ref{fig:ui_low_risk} and Figure~\ref{fig:ui_high_risk} illustrate the dispatcher interface for contrasting triage scenarios. The interface presents real-time triage indicators including the three-dimensional signal values, extracted location metadata, and confidence scores to support rapid human decision-making.
 
 \begin{figure}[ht]
 \centering
 \includegraphics[width=0.85\textwidth]{figures/Screenshot 2025-11-30 at 8.41.20.png}
-\caption{Dispatcher interface for a low-risk scenario (STANDARD triage). The system displays high ASR confidence with successfully extracted location metadata and low distress indicators, allowing the call to queue normally with automated metadata available to the dispatcher.}
+\caption{Dispatcher interface for a low-risk scenario (STANDARD triage). The system displays high ASR confidence, low distress, and low content severity, with successfully extracted location metadata. The call queues normally with automated metadata available to the dispatcher.}
 \label{fig:ui_low_risk}
 \end{figure}
 
 \begin{figure}[ht]
 \centering
 \includegraphics[width=0.85\textwidth]{figures/Screenshot 2025-11-30 at 8.42.43.png}
-\caption{Dispatcher interface for a high-risk scenario (CRITICAL or URGENT triage). Elevated distress markers and reduced ASR confidence trigger immediate priority routing, with visual indicators alerting dispatchers to potential dialect shift or acute crisis requiring immediate human attention.}
+\caption{Dispatcher interface for a high-risk scenario (CRITICAL or URGENT triage). Elevated distress markers, reduced ASR confidence, and high content severity trigger immediate priority routing, with visual indicators alerting dispatchers to potential dialect shift or acute crisis requiring immediate human attention.}
 \label{fig:ui_high_risk}
 \end{figure}
