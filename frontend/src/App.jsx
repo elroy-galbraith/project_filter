@@ -100,8 +100,8 @@ function App() {
       {/* Header */}
       <div className="brand-header">
         <div>
-          <p className="brand-title">🚨 PROJECT FILTER</p>
-          <p className="brand-subtitle">Crisis Triage Dashboard • Bio-Acoustic Intelligence</p>
+          <p className="brand-title">🔱 TRIDENT</p>
+          <p className="brand-subtitle">Triage via Dual-stream Emergency Natural language and Tone</p>
         </div>
         <div style={{ textAlign: 'right' }}>
           <p className="brand-logo">SMG-Labs</p>
