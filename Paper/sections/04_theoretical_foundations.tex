@@ -1,0 +1,27 @@
+\section{Theoretical Foundations}
+
+\subsection{Why Accent-Tuned ASR Is Necessary But Insufficient}
+
+Fine-tuning Whisper on Caribbean speech will improve transcription accuracy, but it cannot eliminate the accent gap entirely. Madden et al. \cite{madden2025} achieved 30\% WER on Jamaican Patois with fine-tuning---a dramatic improvement from 89\% baseline, but still far above the $<$5\% WER typical for standard English. In emergency contexts, even 30\% WER means nearly one-third of words may be incorrect, potentially including critical location or hazard information.
+
+Moreover, fine-tuning on broadcast speech cannot fully capture emergency speech characteristics: elevated noise (sirens, screaming, wind), emotional vocal qualities, and the stress-induced basilectal reversion discussed above. A system relying solely on ASR, no matter how well-tuned, will fail precisely when it is needed most.
+
+\subsection{Why Bio-Acoustic Analysis Is Necessary But Insufficient}
+
+Conversely, bio-acoustic distress detection alone cannot provide the semantic information needed for emergency dispatch. A caller may exhibit extreme vocal stress while saying ``my house is on fire'' or ``I lost my keys''---the distress signal is identical, but the appropriate response differs dramatically.
+
+Furthermore, as Deschamps-Berger et al. \cite{deschampsberger2021} demonstrated, laboratory accuracy of emotion recognition systems (63\%) drops substantially in real emergency calls (45.6\%). Bio-acoustic features provide reliable \emph{gradient} information about caller state but cannot substitute for semantic content.
+
+\subsection{The Integration Thesis}
+
+Our architecture integrates these complementary information sources based on the following thesis: \textbf{In emergency contexts, the correlation between ASR failure and genuine distress creates an opportunity to use recognition uncertainty as a routing signal rather than an error to be minimized.}
+
+This thesis rests on the psycholinguistic literature establishing that:
+\begin{enumerate}
+    \item Stress triggers cognitive load effects that impair executive function \cite{gollan2009}
+    \item Impaired executive function leads to reduced inhibition of dominant language varieties \cite{green1998}
+    \item For Caribbean speakers, dominant varieties include basilectal forms underrepresented in ASR training \cite{patrick1999, madden2025}
+    \item Stress simultaneously elevates bio-acoustic markers (F0, intensity) that can be detected independently of speech content \cite{vanpuyvelde2018}
+\end{enumerate}
+
+The logical conclusion: when ASR confidence drops and bio-acoustic distress rises, the system has detected a caller in genuine crisis whose speech has shifted beyond standard recognition capabilities. This combination should trigger immediate human review---not because the system has failed, but because it has successfully identified a caller who needs human attention most.

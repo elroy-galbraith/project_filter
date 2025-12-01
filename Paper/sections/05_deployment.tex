@@ -1,0 +1,55 @@
+\section{Deployment Considerations}
+
+\subsection{Hardware Requirements}
+
+The complete system is designed for deployment on Raspberry Pi 5 (8GB RAM) or equivalent edge hardware:
+
+\begin{table}[ht]
+\centering
+\begin{tabular}{@{}llll@{}}
+\toprule
+\textbf{Component} & \textbf{Model} & \textbf{Size} & \textbf{Inference Speed} \\ \midrule
+ASR & Whisper Medium (INT4) & $\sim$400MB & $\sim$10s per 30s audio \\
+NLP & Llama 3 8B (4-bit) & $\sim$4GB & 2-5 tokens/sec \\
+Bio-acoustic & librosa + numpy & $<$50MB & Real-time \\ \bottomrule
+\end{tabular}
+\caption{Hardware requirements for edge deployment}
+\label{tab:hardware}
+\end{table}
+
+Total system footprint: $\sim$4.5GB, well within Raspberry Pi 5 8GB capacity.
+
+\subsection{Latency Analysis}
+
+\textbf{Important Clarification:} TRIDENT is designed as a \textbf{batch triage engine for queue management during disaster surges}, not a real-time conversational assistant. The system processes completed call recordings (or call segments) to assign priority scores for dispatcher review.
+
+\textbf{End-to-end processing time for a 30-second call segment:}
+\begin{itemize}
+    \item Audio preprocessing: $\sim$2 seconds
+    \item ASR transcription: $\sim$10 seconds
+    \item Bio-acoustic extraction: $\sim$1 second (parallel with ASR)
+    \item NLP entity extraction: $\sim$30-45 seconds
+    \item Triage decision: $<$1 second
+    \item \textbf{Total: $\sim$45-60 seconds}
+\end{itemize}
+
+This latency is unsuitable for real-time call answering (picking up the phone), but appropriate for:
+\begin{itemize}
+    \item \textbf{Surge triage:} When call volume exceeds dispatcher capacity, the system prioritizes the queue
+    \item \textbf{Post-call analysis:} Reviewing recorded calls for quality assurance or pattern detection
+    \item \textbf{Voicemail triage:} Processing voicemail messages left during high-volume periods
+\end{itemize}
+
+For real-time operation, a production deployment would require GPU acceleration (e.g., NVIDIA Jetson) to reduce ASR latency to $<$3 seconds.
+
+\subsection{Offline Operation}
+
+All components operate without internet connectivity:
+\begin{itemize}
+    \item Whisper model weights stored locally
+    \item Llama 3 served via local Ollama instance
+    \item Bio-acoustic analysis uses standard signal processing libraries
+    \item Triage logic implemented in local Python
+\end{itemize}
+
+This enables deployment at emergency coordination centers that may lose internet connectivity during disasters while maintaining local power (generator/battery backup).

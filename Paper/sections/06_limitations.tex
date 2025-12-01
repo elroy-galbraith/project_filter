@@ -1,0 +1,35 @@
+\section{Limitations and Future Work}
+
+\subsection{Current Limitations}
+
+\textbf{Validation gap (most critical).} This paper presents an architectural framework with theoretical grounding but limited empirical validation on real emergency calls. Performance claims for each layer are based on component evaluations and related literature rather than end-to-end system testing.
+
+\textbf{Training data constraints.} Caribbean emergency speech corpora do not exist. Fine-tuning was performed on broadcast speech, which differs significantly from emergency call acoustics in noise profiles, emotional content, and register distribution.
+
+\textbf{Bio-acoustic threshold calibration.} Distress detection thresholds are derived from literature on non-Caribbean populations. Baseline vocal characteristics may vary across Caribbean demographics, requiring population-specific calibration.
+
+\textbf{Gender and F0 baseline variation.} Fundamental frequency is sexually dimorphic: relaxed male voices average 85-180 Hz while relaxed female voices average 165-255 Hz. Our current distress detection uses a single baseline (180 Hz), which creates systematic bias:
+\begin{itemize}
+    \item \textbf{False positive risk:} A relaxed female speaker may naturally produce F0 values that trigger ``elevated distress'' classification
+    \item \textbf{False negative risk:} A highly stressed male speaker may not exceed the 240 Hz ``high distress'' threshold
+\end{itemize}
+
+Addressing this requires either: (a) speaker gender classification followed by gender-normalized thresholds, (b) ``relative to baseline'' calculation requiring speaker enrollment, or (c) detection of F0 \emph{change} within a call rather than absolute values. Each approach has tradeoffs that require empirical evaluation. \textbf{This represents a significant risk of gender bias in triage logic that must be addressed before deployment.}
+
+\textbf{Single-speaker assumption.} The current architecture assumes single-speaker input. Multi-party calls, common in emergencies (``put your mother on the phone''), are not handled.
+
+\textbf{Confidence threshold sensitivity.} The 0.7 ASR confidence threshold was selected based on initial calibration but has not been rigorously optimized. Sensitivity analysis examining system performance across threshold values (0.5-0.9) is needed to understand the precision-recall tradeoff for triage decisions.
+
+\subsection{Future Work}
+
+\textbf{Caribbean Emergency Speech Corpus.} The most critical enabler for future progress is a dedicated corpus combining Caribbean-accented speech with emergency domain content and stress annotations. We are exploring partnerships with Caribbean emergency services to develop such a resource.
+
+\textbf{Empirical validation.} End-to-end evaluation with emergency dispatch professionals rating system triage decisions against expert judgment.
+
+\textbf{Ablation studies.} Rigorous testing to demonstrate that the bio-acoustic layer actually improves triage accuracy over ASR-only approaches---proving the value of the ``low confidence as signal'' insight.
+
+\textbf{Dialect density estimation.} Augmenting the triage logic with automatic estimation of creole feature density, providing dispatchers with guidance on expected communication challenges.
+
+\textbf{Multilingual extension.} Caribbean emergency services handle calls in English, Spanish, French, Dutch, and various creoles. Extending the architecture to multilingual operation would significantly expand impact.
+
+\textbf{Gender-normalized distress detection.} Implementing and validating speaker-dependent F0 baseline estimation to address the gender bias limitation described above.

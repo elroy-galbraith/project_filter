@@ -1,0 +1,71 @@
+% Main document for Project Filter paper
+\documentclass[11pt,a4paper]{article}
+
+% Packages
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{amsmath,amssymb}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{xcolor}
+\usepackage{geometry}
+\usepackage{fancyvrb}
+\usepackage{listings}
+
+% Page geometry
+\geometry{margin=1in}
+
+% Hyperref setup
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue,
+    citecolor=blue,
+    urlcolor=blue
+}
+
+% Code listings setup
+\lstset{
+    basicstyle=\ttfamily\small,
+    breaklines=true,
+    frame=single,
+    backgroundcolor=\color{gray!10}
+}
+
+% Document metadata and abstract
+\input{metadata.tex}
+
+\begin{document}
+
+\maketitle
+
+% Abstract
+\begin{abstract}
+Emergency speech recognition systems exhibit systematic performance degradation on non-standard English varieties, creating a critical gap in services for Caribbean populations. We present TRIDENT (Triage via Dual-stream Emergency Natural language and Tone), a three-layer triage architecture designed for resilience when automatic speech recognition fails. The system combines Caribbean-accent-tuned ASR, local entity extraction via large language models, and bio-acoustic distress detection to route emergency calls based on both transcription confidence and vocal stress indicators. \textbf{Our key insight is that low ASR confidence, rather than representing system failure, serves as a valuable triage signal---particularly when combined with elevated vocal distress markers indicating a caller in crisis whose speech may have shifted toward basilectal registers.} We demonstrate that treating uncertainty as signal enables more equitable triage performance for underrepresented speech varieties. We describe the architectural design, theoretical grounding in psycholinguistic research on stress-induced code-switching, and deployment considerations for offline operation during disaster scenarios. \textbf{This paper presents an architectural framework and position paper; empirical validation on Caribbean emergency calls remains future work.} This work establishes a framework for accent-resilient emergency AI that treats dialect variation as a routing feature rather than a transcription bug.
+\end{abstract}
+
+% Keywords
+\noindent\textbf{Keywords:} automatic speech recognition, Caribbean English, emergency dispatch, vocal stress detection, creole continuum, edge computing, position paper
+
+\vspace{0.5cm}
+
+% Main sections
+\input{sections/01_introduction.tex}
+\input{sections/02_related_work.tex}
+\input{sections/03_system_architecture.tex}
+\input{sections/04_theoretical_foundations.tex}
+\input{sections/05_deployment.tex}
+\input{sections/06_limitations.tex}
+\input{sections/07_conclusion.tex}
+
+% References
+\bibliographystyle{plain}
+\bibliography{refs/references}
+
+% Appendices
+\appendix
+\input{appendices/implementation.tex}
+\input{appendices/acknowledgments.tex}
+
+\end{document}

@@ -1,0 +1,13 @@
+\subsection{The Complementarity Principle}
+
+The theoretical foundation for our multi-layer design rests on what we term the \textbf{Complementarity Principle}: the conditions that degrade ASR performance (high stress, code-switching to basilect, elevated emotion) are precisely the conditions that elevate bio-acoustic distress signals.
+
+This creates a natural redundancy:
+\begin{itemize}
+    \item \textbf{High ASR confidence + Low distress:} Standard call, NLP extraction reliable
+    \item \textbf{High ASR confidence + High distress:} Urgent but comprehensible, prioritize
+    \item \textbf{Low ASR confidence + Low distress:} Technical issue (noise, distance), re-prompt
+    \item \textbf{Low ASR confidence + High distress:} Critical combination---caller in crisis, speech shifted to basilect, route to human dispatcher immediately
+\end{itemize}
+
+The fourth quadrant---low confidence combined with high distress---represents our key insight. Rather than treating this as a system failure, we interpret it as valuable triage information: this caller needs immediate human attention precisely \emph{because} automated systems cannot process their speech.

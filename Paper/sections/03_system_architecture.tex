@@ -1,0 +1,16 @@
+\section{System Architecture}
+
+TRIDENT implements a three-layer architecture where each component provides independent value while contributing to a unified triage decision. Figure~\ref{fig:system_diagram} illustrates the system flow.
+
+\begin{figure}[ht]
+\centering
+\includegraphics[width=0.9\textwidth]{figures/project_filter_architecture.pdf}
+\caption{The TRIDENT architecture. The system processes raw audio through two parallel streams: (Left) A Caribbean-adapted ASR and NLP pipeline for semantic extraction, and (Right) a bio-acoustic analysis layer for determining physiological distress. The Triage Decision Engine integrates ASR confidence scores with vocal distress markers, ensuring that calls with low transcription confidence but high vocal distress (indicative of basilectal shift or acute crisis) are routed to priority dispatch rather than discarded.}
+\label{fig:system_diagram}
+\end{figure}
+
+\input{subsections/architecture/asr_layer.tex}
+\input{subsections/architecture/nlp_layer.tex}
+\input{subsections/architecture/bioacoustic_layer.tex}
+\input{subsections/architecture/complementarity.tex}
+\input{subsections/architecture/triage_matrix.tex}

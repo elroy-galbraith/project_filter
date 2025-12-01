@@ -1,0 +1,19 @@
+\subsection{Triage Decision Matrix}
+
+The final routing decision combines ASR confidence and distress score according to the following matrix:
+
+\begin{table}[ht]
+\centering
+\begin{tabular}{@{}lll@{}}
+\toprule
+\textbf{ASR Confidence} & \textbf{Distress Score} & \textbf{Triage Decision} \\ \midrule
+High ($\geq$0.7) & Low ($\leq$0.4) & \textbf{STANDARD:} Queue with extracted metadata \\
+High ($\geq$0.7) & Moderate (0.4-0.7) & \textbf{ELEVATED:} Priority queue, human review recommended \\
+High ($\geq$0.7) & High ($>$0.7) & \textbf{URGENT:} Immediate human dispatch \\
+Low ($<$0.7) & Low ($\leq$0.4) & \textbf{UNCLEAR:} Re-prompt caller, check audio quality \\
+Low ($<$0.7) & Moderate (0.4-0.7) & \textbf{PRIORITY REVIEW:} Human dispatcher reviews audio \\
+Low ($<$0.7) & High ($>$0.7) & \textbf{CRITICAL:} Immediate human dispatch, flag as potential dialect reversion \\ \bottomrule
+\end{tabular}
+\caption{Triage decision matrix based on ASR confidence and bio-acoustic distress}
+\label{tab:triage_matrix}
+\end{table}

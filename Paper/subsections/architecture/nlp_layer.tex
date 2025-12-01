@@ -1,0 +1,44 @@
+\subsection{Layer 2: Local NLP Entity Extraction}
+
+When ASR produces usable transcription (confidence $\geq$ 0.7), the NLP layer extracts structured emergency information using Llama 3 8B running locally via Ollama. The extraction schema targets four entity types critical for emergency dispatch:
+
+\begin{itemize}
+    \item \textbf{LOCATION:} Street addresses, landmarks, geographic references
+    \item \textbf{HAZARD:} Emergency type (fire, flood, medical, violence, etc.)
+    \item \textbf{PERSONS:} Number of people involved, injuries mentioned
+    \item \textbf{URGENCY:} Temporal markers (``right now,'' ``hurry,'' breathing patterns)
+\end{itemize}
+
+\textbf{Handling Garbled Input:} A critical design question is how the NLP layer behaves when ASR produces low-quality transcriptions. We address this through confidence-aware prompting:
+
+\begin{verbatim}
+SYSTEM: You are extracting emergency information from a
+speech transcript. The transcription confidence is
+{confidence_score}.
+
+If confidence is below 0.7, the transcript may contain errors.
+Extract what you can, but:
+1. Mark uncertain extractions with [UNCERTAIN]
+2. Do not hallucinate or guess missing information
+3. Prioritize extracting any recognizable location names
+4. Note phonetically similar alternatives for garbled terms
+
+TRANSCRIPT: {asr_output}
+\end{verbatim}
+
+\textbf{Example of garbled transcript handling:}
+
+\begin{table}[ht]
+\centering
+\small
+\begin{tabular}{@{}p{0.45\textwidth}p{0.45\textwidth}@{}}
+\toprule
+\textbf{ASR Output (confidence=0.52)} & \textbf{NLP Extraction} \\ \midrule
+``mi house a bun down pan [unintelligible] road near di gas station'' &
+LOCATION: ``[UNCERTAIN] road, near gas station''; HAZARD: ``fire (house burning)''; PERSONS: ``unknown''; URGENCY: ``high'' \\ \bottomrule
+\end{tabular}
+\caption{Example of NLP extraction from low-confidence ASR output}
+\label{tab:garbled_example}
+\end{table}
+
+When confidence is very low ($<$0.4), the NLP layer produces minimal structured output and flags the call for immediate human review, relying on the bio-acoustic layer to provide triage guidance.

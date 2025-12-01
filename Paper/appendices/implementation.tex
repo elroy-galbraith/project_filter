@@ -1,0 +1,19 @@
+\section{Implementation Details}
+
+\textbf{Repository:} \url{https://github.com/smg-labs/project-filter} \emph{(to be made public upon acceptance)}
+
+\textbf{Dependencies:}
+\begin{itemize}
+    \item Python 3.11+
+    \item openai-whisper
+    \item transformers, peft (LoRA fine-tuning)
+    \item ollama (Llama 3 serving)
+    \item librosa (audio feature extraction)
+    \item jiwer (WER evaluation)
+\end{itemize}
+
+\textbf{Hardware requirements:}
+\begin{itemize}
+    \item Training: NVIDIA GPU with 16GB+ VRAM recommended
+    \item Inference: CPU-only operation supported; 8GB RAM minimum
+\end{itemize}

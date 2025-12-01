@@ -1,0 +1,5 @@
+\subsection{Summary: Positioning Our Contribution}
+
+The literature reveals a clear opportunity space. Existing emergency dispatch AI systems uniformly exhibit: (1) reliance on cloud-dependent, accent-agnostic ASR; (2) exclusive focus on textual features, ignoring paralinguistic stress signals; (3) no consideration of dialect continua or stress-induced code-switching; and (4) inability to function during infrastructure failures.
+
+Our three-layer architecture directly addresses each gap. Caribbean-accent-tuned Whisper provides the foundation that makes downstream NLP viable. Local Llama 3-based entity extraction operates without internet connectivity. Bio-acoustic distress detection provides a parallel triage signal that functions even when ASR fails---transforming low transcription confidence from a system failure into a routing feature. The result is the first crisis triage system designed specifically for Caribbean emergency services, capable of operating when communication infrastructure is most degraded.

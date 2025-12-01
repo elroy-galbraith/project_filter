@@ -1,0 +1,43 @@
+\subsection{Layer 3: Bio-Acoustic Distress Detection}
+
+The bio-acoustic layer operates on raw audio, independent of ASR success, extracting features correlated with psychological distress. Based on the vocal stress literature \cite{schmalz2025, vanpuyvelde2018}, we focus on two primary features:
+
+\textbf{Feature Extraction (using librosa):}
+
+\begin{enumerate}
+    \item \textbf{Fundamental Frequency (F0):} Mean pitch extracted via autocorrelation method
+    \begin{itemize}
+        \item Typical baseline: 85-180 Hz (male), 165-255 Hz (female)
+        \item Stress indicator: Elevation $>$20\% above speaker baseline
+    \end{itemize}
+
+    \item \textbf{Energy (RMS amplitude):} Mean intensity across utterance
+    \begin{itemize}
+        \item Normalized to 0-1 scale relative to recording gain
+        \item Stress indicator: energy\_avg $>$ 0.05 (normalized units)
+    \end{itemize}
+\end{enumerate}
+
+\textbf{Distress Score Calculation:}
+
+The distress score combines pitch and energy deviations into a single metric:
+
+\begin{align}
+\text{distress\_score} &= w_{\text{pitch}} \cdot \text{pitch\_component} + w_{\text{energy}} \cdot \text{energy\_component} \\
+\text{where:} \nonumber \\
+\text{pitch\_component} &= \min\left(1.0, \max\left(0, \frac{\bar{F_0} - 180}{120}\right)\right) \\
+\text{energy\_component} &= \min\left(1.0, \frac{\bar{E}}{0.1}\right) \\
+w_{\text{pitch}} &= 0.6 \quad \text{(based on literature showing F0 as most reliable marker)} \nonumber \\
+w_{\text{energy}} &= 0.4 \nonumber
+\end{align}
+
+Where $\bar{F_0}$ is mean fundamental frequency in Hz and $\bar{E}$ is mean RMS energy (normalized).
+
+\textbf{Threshold Rationale:}
+\begin{itemize}
+    \item ``High Distress'' threshold: distress\_score $>$ 0.7
+    \item ``Moderate Distress'' threshold: 0.4 $<$ distress\_score $\leq$ 0.7
+    \item ``Low Distress'' threshold: distress\_score $\leq$ 0.4
+\end{itemize}
+
+These thresholds are calibrated against Van Puyvelde et al.'s \cite{vanpuyvelde2018} findings on F0 ranges in emergency versus baseline speech. The 180 Hz baseline in the pitch component represents an approximate population mean; see Limitations for discussion of gender normalization requirements.

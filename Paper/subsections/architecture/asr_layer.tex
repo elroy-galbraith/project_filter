@@ -1,0 +1,21 @@
+\subsection{Layer 1: Caribbean-Tuned ASR}
+
+The ASR layer employs OpenAI's Whisper Medium model (769M parameters) fine-tuned with Low-Rank Adaptation (LoRA) on Caribbean broadcast speech. We selected Whisper Medium over Large based on Madden et al.'s \cite{madden2025} scaling law, which demonstrates diminishing returns from model size compared to domain-specific data for Caribbean varieties.
+
+\textbf{Fine-tuning Configuration:}
+\begin{itemize}
+    \item Base model: openai/whisper-medium
+    \item Adaptation: LoRA (rank=16, alpha=32)
+    \item Training data: BBC Caribbean broadcast corpus ($\sim$28,000 clips)
+    \item Trainable parameters: $\sim$0.5\% of total model
+\end{itemize}
+
+\textbf{Confidence Scoring:} The system computes \textbf{utterance-level} confidence as the mean log-probability across all decoded tokens, normalized to a 0-1 scale. Specifically:
+
+\begin{equation}
+\text{confidence} = \exp\left(\frac{1}{N}\sum_{i=1}^{N} \log P(t_i | t_1 \ldots t_{i-1}, \text{audio})\right)
+\end{equation}
+
+We use utterance-level rather than token-level confidence because emergency triage requires a holistic assessment of transcription reliability. Token-level confidence would require additional aggregation logic and may miss systematic degradation patterns (e.g., consistently low confidence across an entire basilectal utterance).
+
+\textbf{Confidence Threshold:} We set the ``low confidence'' threshold at 0.7 based on initial calibration experiments, though sensitivity analysis is needed to optimize this value (see Limitations).
