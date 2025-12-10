@@ -19,3 +19,5 @@ The ASR layer employs OpenAI's Whisper Large model (769M parameters) fine-tuned 
 We use utterance-level rather than token-level confidence because emergency triage requires a holistic assessment of transcription reliability. Token-level confidence would require additional aggregation logic and may miss systematic degradation patterns (e.g., consistently low confidence across an entire basilectal utterance).
 
 \textbf{Confidence Threshold:} We set the ``low confidence'' threshold at 0.7 based on initial calibration experiments, though sensitivity analysis is needed to optimize this value (see Limitations).
+
+The configuration above reflects design specifications informed by the Caribbean Voices AI Hackathon, which provided access to the BBC Caribbean corpus. Competition data rights are retained by the organizers; empirical validation therefore remains future work. The architecture accommodates any Caribbean-tuned Whisper model meeting these specifications.
