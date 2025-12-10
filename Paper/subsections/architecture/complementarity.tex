@@ -1,24 +1,35 @@
 \subsection{The Complementarity Principle}
 
-The theoretical foundation for our multi-layer design rests on what we term the \textbf{Complementarity Principle}: the three triage dimensions capture distinct failure modes and urgency signals that compensate for each other's blind spots.
+The theoretical foundation for our multi-layer design rests on what we term the \textbf{Complementarity Principle}: the three signal dimensions capture distinct failure modes and urgency indicators that compensate for each other's blind spots, ensuring dispatchers receive the most critical calls first regardless of which individual signal might fail.
 
-\textbf{Dimension 1: ASR Confidence.} The conditions that degrade ASR performance (high stress, code-switching to basilect, environmental noise) are precisely the conditions that often accompany genuine emergencies. Low confidence is not merely a technical limitation---it correlates with caller distress.
+\textbf{Dimension 1: Transcription Confidence.} The conditions that degrade ASR performance (high stress, code-switching to basilect, environmental noise) are precisely the conditions that often accompany genuine emergencies. Low confidence is not merely a technical limitation to be hidden---it correlates with caller distress and should elevate queue priority while flagging the call for direct audio review.
 
-\textbf{Dimension 2: Bio-Acoustic Distress.} Vocal stress markers (elevated pitch, intensity, instability) provide a parallel assessment channel that operates on raw audio, independent of transcription success. A caller whose speech is entirely unintelligible to ASR will still produce detectable distress signals.
+\textbf{Dimension 2: Content Indicators.} Semantic analysis of transcript content captures urgency that vocal characteristics may miss. Trained professionals, repeat callers, and composed bystanders often report critical emergencies without elevated vocal stress---their calm delivery masks the urgency that only content analysis reveals. When transcription confidence is high, extracted entities map directly to ESI/START decision points.
 
-\textbf{Dimension 3: Content Severity.} Semantic analysis of transcript content captures urgency that vocal characteristics may miss. Trained professionals, repeat callers, and composed bystanders often report critical emergencies without elevated vocal stress---their calm delivery masks the urgency that only content analysis reveals.
+\textbf{Dimension 3: Bio-Acoustic Distress.} Vocal stress markers (elevated pitch, intensity, instability) provide a parallel assessment channel that operates on raw audio, independent of transcription success. A caller whose speech is entirely unintelligible to ASR will still produce detectable distress signals. This dimension captures information not currently used by ESI or START protocols, representing TRIDENT's novel contribution to dispatcher awareness.
 
-This creates a robust triage space with complementary coverage:
+This creates a robust prioritization space with complementary coverage:
+
+\textbf{Dimensional ordering.} The three dimensions are evaluated in deliberate sequence: \emph{Confidence}, \emph{Content}, \emph{Concern}. This ordering reflects operational logic: (1) \emph{Can we understand the caller?}---ASR confidence determines whether transcription is reliable enough for downstream analysis; (2) \emph{What is being reported?}---semantic content establishes the substance of the emergency; (3) \emph{How distressed does the caller sound?}---bio-acoustic indicators validate and can elevate priority, but do not override content. This sequence ensures that a composed professional reporting a mass casualty event receives appropriate priority based on content, while a highly distressed caller reporting a minor issue is not over-prioritized based on vocal expression alone.
 
 \begin{itemize}
-    \item \textbf{High Confidence + Low Distress + Low Severity:} Routine call, automated processing appropriate
-    \item \textbf{High Confidence + Low Distress + High Severity:} The composed reporter---urgent content from a calm caller requires priority handling despite absent vocal stress markers
-    \item \textbf{High Confidence + High Distress + Low Severity:} Anxious caller, minor issue---human review to de-escalate
-    \item \textbf{High Confidence + High Distress + High Severity:} Confirmed emergency, all signals aligned
-    \item \textbf{Low Confidence + Low Distress + Low Severity:} Likely technical issue, re-prompt or review
-    \item \textbf{Low Confidence + Low Distress + High Severity:} Garbled but fragments suggest urgency---human ears needed
-    \item \textbf{Low Confidence + High Distress + Low Severity:} Distressed caller, unintelligible speech---priority human review
-    \item \textbf{Low Confidence + High Distress + High Severity:} Maximum urgency---all indicators elevated, immediate dispatch
+    \item \textbf{High Confidence + Low Content + Low Concern:} Routine call; dispatcher applies ESI using extracted entities at normal pace
+    
+    \item \textbf{High Confidence + High Content + Low Concern:} The composed reporter---urgent content from a calm caller requires elevated queue position; dispatcher reviews entities and applies ESI, likely assigning ESI-2 or ESI-3
+    
+    \item \textbf{High Confidence + Low Content + High Concern:} Anxious caller, possibly minor issue---dispatcher assesses whether distress reflects emergency or anxiety
+    
+    \item \textbf{High Confidence + High Content + High Concern:} All signals aligned; immediate queue position for rapid ESI/START application
+    
+    \item \textbf{Low Confidence + Low Content + Low Concern:} Likely technical issue; dispatcher reviews audio quality before processing
+    
+    \item \textbf{Low Confidence + High Content + Low Concern:} Garbled but fragments suggest urgency---elevated priority; dispatcher listens directly
+    
+    \item \textbf{Low Confidence + Low Content + High Concern:} Distressed caller with unintelligible speech---immediate priority; dispatcher listens and applies protocol based on direct assessment
+    
+    \item \textbf{Low Confidence + High Content + High Concern:} Maximum queue priority---all indicators suggest crisis; immediate dispatcher attention
 \end{itemize}
 
-Two cells represent our key insights. The \textbf{Low Confidence + High Distress} cases (regardless of content) capture callers in crisis whose speech has shifted toward basilectal registers---we interpret ASR failure combined with vocal stress as valuable triage information rather than system failure. The \textbf{High Confidence + Low Distress + High Severity} cell captures the complementary blind spot: the trained first responder or composed bystander whose calm voice belies the urgency of their report. Together, these insights ensure that neither paralinguistic nor semantic signals alone determine routing.
+Two cells represent our key insights. The \textbf{High Confidence + High Content + Low Concern} cell captures callers whose semantic content demands urgent attention despite calm delivery: the trained first responder, medical professional, or composed bystander whose measured voice belies the severity of their report. The \textbf{Low Confidence + Low Content + High Concern} cases capture the complementary pattern---callers in crisis whose speech has shifted toward basilectal registers, where ASR failure combined with vocal stress becomes valuable prioritization information rather than system failure.
+
+Together, these insights ensure that neither semantic nor paralinguistic signals alone determine queue position---and that clinical triage decisions remain with trained dispatchers who can assess the full context of each call.

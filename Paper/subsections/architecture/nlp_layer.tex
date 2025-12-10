@@ -1,15 +1,59 @@
 \subsection{Layer 2: Local NLP Entity Extraction}
 
-When ASR produces usable transcription (confidence $\geq$ 0.7), the NLP layer extracts structured emergency information using Llama 3 8B running locally via Ollama. The extraction schema targets four entity types critical for emergency dispatch:
+When ASR produces usable transcription (confidence $\geq$ 0.7), the NLP layer extracts structured emergency information using Llama 3 8B running locally via Ollama. The extraction schema targets entity types that map directly to ESI and START triage protocol decision points, enabling dispatchers to apply these frameworks more efficiently.
+
+\subsubsection{Entity Extraction Schema}
+
+The extraction schema targets four entity categories critical for protocol application:
 
 \begin{itemize}
-    \item \textbf{LOCATION:} Street addresses, landmarks, geographic references
-    \item \textbf{HAZARD:} Emergency type (fire, flood, medical, violence, etc.)
-    \item \textbf{PERSONS:} Number of people involved, injuries mentioned
-    \item \textbf{URGENCY:} Temporal markers (``right now,'' ``hurry,'' breathing patterns)
+    \item \textbf{LOCATION:} Street addresses, landmarks, geographic references---essential for dispatch routing
+    \item \textbf{MECHANISM/HAZARD:} Emergency type (fire, flood, medical, violence, traffic)---maps to ESI resource prediction
+    \item \textbf{CLINICAL INDICATORS:} Breathing status, consciousness, bleeding, mobility---maps to ESI Decision Points A and B
+    \item \textbf{SCALE:} Number of people involved, injuries mentioned, vulnerable populations---maps to START mass casualty sorting and ESI resource needs
 \end{itemize}
 
-\textbf{Handling Garbled Input:} A critical design question is how the NLP layer behaves when ASR produces low-quality transcriptions. We address this through confidence-aware prompting:
+\subsubsection{Mapping to ESI Decision Points}
+
+The ESI algorithm proceeds through four decision points \cite{esi_handbook}. TRIDENT's entity extraction targets information relevant to each:
+
+\begin{table}[ht]
+\centering
+\small
+\begin{tabular}{@{}p{3.5cm}p{4cm}p{5cm}@{}}
+\toprule
+\textbf{ESI Decision Point} & \textbf{Clinical Question} & \textbf{TRIDENT Extraction Target} \\ \midrule
+A: Immediate lifesaving intervention? & Airway, breathing, circulation compromise & ``not breathing,'' ``choking,'' ``heavy bleeding,'' ``unresponsive'' \\[0.5em]
+B: High-risk situation? & Could patient deteriorate? & Mechanism of injury, chest pain, altered mental status \\[0.5em]
+C: Resource needs? & How many resources required? & Hazard type, complexity indicators, number affected \\[0.5em]
+D: Vital signs? & Abnormal vitals requiring uptriage? & Any reported vitals, distress indicators \\ \bottomrule
+\end{tabular}
+\caption{Mapping between ESI decision points and TRIDENT entity extraction targets. Extracted entities support but do not replace dispatcher clinical judgment.}
+\label{tab:esi_mapping}
+\end{table}
+
+\subsubsection{Mapping to START Categories}
+
+For mass casualty events, dispatchers apply START rather than ESI. TRIDENT extracts indicators relevant to START's rapid sorting:
+
+\begin{table}[ht]
+\centering
+\small
+\begin{tabular}{@{}p{2.5cm}p{4cm}p{5.5cm}@{}}
+\toprule
+\textbf{START Category} & \textbf{Sorting Criteria} & \textbf{TRIDENT Extraction Target} \\ \midrule
+GREEN (Minor) & Can walk & ``walking,'' ``minor injuries,'' ``okay'' \\[0.5em]
+YELLOW (Delayed) & Breathing, follows commands & ``injured but stable,'' ``conscious'' \\[0.5em]
+RED (Immediate) & Not walking, breathing issues, or not following commands & ``trapped,'' ``not breathing,'' ``unresponsive,'' ``heavy bleeding'' \\[0.5em]
+BLACK (Expectant) & Not breathing after airway intervention & ``dead,'' ``not breathing,'' no pulse mentioned \\ \bottomrule
+\end{tabular}
+\caption{Mapping between START triage categories and TRIDENT entity extraction targets for mass casualty scenarios.}
+\label{tab:start_mapping}
+\end{table}
+
+\subsubsection{Handling Garbled Input}
+
+A critical design question is how the NLP layer behaves when ASR produces low-quality transcriptions. We address this through confidence-aware prompting:
 
 \begin{verbatim}
 SYSTEM: You are extracting emergency information from a
@@ -35,17 +79,21 @@ TRANSCRIPT: {asr_output}
 \toprule
 \textbf{ASR Output (confidence=0.52)} & \textbf{NLP Extraction} \\ \midrule
 ``mi house a bun down pan [unintelligible] road near di gas station'' &
-LOCATION: ``[UNCERTAIN] road, near gas station''; HAZARD: ``fire (house burning)''; PERSONS: ``unknown''; URGENCY: ``high'' \\ \bottomrule
+LOCATION: ``[UNCERTAIN] road, near gas station''; HAZARD: ``fire (house burning)''; CLINICAL: ``unknown''; SCALE: ``unknown'' \\ \bottomrule
 \end{tabular}
-\caption{Example of NLP extraction from low-confidence ASR output}
+\caption{Example of NLP extraction from low-confidence ASR output. Uncertain fields are marked rather than hallucinated.}
 \label{tab:garbled_example}
 \end{table}
 
-When confidence is very low ($<$0.4), the NLP layer produces minimal structured output and flags the call for immediate human review, relying on the bio-acoustic layer to provide triage guidance.
+When confidence is very low ($<$0.4), the NLP layer produces minimal structured output and the call is flagged for immediate human review, relying on the bio-acoustic layer to inform queue prioritization.
 
-\subsubsection{Content Severity Scoring}
+\subsubsection{Content Indicator Scoring}
 
-Beyond entity extraction, the NLP layer computes a \textbf{Content Severity Score} ($S_c \in [0,100]$) that quantifies the urgency implied by the \textit{semantic content} of the transcript, independent of how the caller sounds. This addresses a critical gap: a trained first responder or composed bystander may report a mass casualty event in a calm voice, producing low bio-acoustic distress despite extremely urgent content.
+Beyond entity extraction, the NLP layer computes a \textbf{Content Indicator Score} ($S_c \in [0,100]$) that informs queue prioritization. This score quantifies the urgency implied by the \textit{semantic content} of the transcript, independent of how the caller sounds. 
+
+\textbf{Important clarification:} The Content Indicator Score determines \emph{queue position}, not clinical triage level. A high score means the call should reach a dispatcher quickly; the dispatcher then applies ESI or START to determine the actual clinical priority.
+
+This addresses a critical gap: a trained first responder or composed bystander may report a mass casualty event in a calm voice, producing low bio-acoustic distress despite extremely urgent content. Without content analysis, such calls would be deprioritized in the queue.
 
 \textbf{Classification-Based Approach.} Rather than brittle keyword matching, we leverage the LLM's semantic understanding to classify transcript content along four dimensions. This approach offers critical advantages for Caribbean speech: the model can recognize that ``mi granmodda drop dung an she nah move'' conveys the same urgency as ``my grandmother collapsed and she's not moving'' without requiring an exhaustive enumeration of creole variants. The LLM also handles negation (``no one is trapped''), indirect references (``she nine months pregnant'' $\rightarrow$ vulnerable), and context-dependent interpretation that keyword matching cannot capture.
 
@@ -62,14 +110,14 @@ The LLM outputs structured classifications according to the following schema:
 }
 \end{verbatim}
 
-A deterministic scoring function then maps these classifications to the Content Severity Score, separating the flexibility of neural language understanding from the interpretability of rule-based scoring:
+A deterministic scoring function then maps these classifications to the Content Indicator Score, separating the flexibility of neural language understanding from the interpretability of rule-based scoring:
 
 \begin{equation}
 S_c = \min\left(100,\ S_{\text{hazard}} + S_{\text{threat}} + S_{\text{vuln}} + S_{\text{scale}}\right)
 \label{eq:content_severity}
 \end{equation}
 
-\textbf{Component 1: Hazard Category ($S_{\text{hazard}}$).} Different emergency types carry inherent urgency levels:
+\textbf{Component 1: Hazard Category ($S_{\text{hazard}}$).} Different emergency types carry inherent urgency levels for queue prioritization:
 
 \begin{table}[ht]
 \centering
@@ -85,7 +133,7 @@ S_c = \min\left(100,\ S_{\text{hazard}} + S_{\text{threat}} + S_{\text{vuln}} + 
 \texttt{infrastructure} & 10 \\
 \texttt{other} & 5 \\ \bottomrule
 \end{tabular}
-\caption{Hazard category severity scores}
+\caption{Hazard category weights for queue prioritization}
 \label{tab:hazard_weights}
 \end{table}
 
@@ -105,7 +153,7 @@ S_c = \min\left(100,\ S_{\text{hazard}} + S_{\text{threat}} + S_{\text{vuln}} + 
     \item \texttt{situation\_status = "escalating"}: +10 (fire spreading, water rising, more vehicles involved)
 \end{itemize}
 
-\textbf{Example severity calculations:}
+\textbf{Example calculations:}
 
 \begin{table}[ht]
 \centering
@@ -124,8 +172,10 @@ S_c = \min\left(100,\ S_{\text{hazard}} + S_{\text{threat}} + S_{\text{vuln}} + 
 ``Pickney dem trap inna di fire'' & 
 \texttt{fire, imminent, true, stable, 2+} & 80 \\ \bottomrule
 \end{tabular}
-\caption{Content severity scoring via LLM classification. The model's semantic understanding captures urgency from both standard English and Caribbean creole variants without explicit keyword enumeration.}
+\caption{Content indicator scoring via LLM classification. The model's semantic understanding captures urgency from both standard English and Caribbean creole variants. High scores elevate queue priority; clinical triage remains with dispatchers.}
 \label{tab:severity_examples}
 \end{table}
 
-The Content Severity Score provides the third dimension of the triage decision matrix (Section~\ref{sec:triage_matrix}), ensuring that semantically urgent calls receive priority routing even when vocal distress markers are low.
+The Content Indicator Score feeds into the queue prioritization engine (Section~\ref{sec:queue_prioritization}), ensuring that semantically urgent calls reach dispatchers promptly even when vocal distress markers are absent.
+
+\textbf{Note on weight calibration:} The weights presented here represent initial values based on general emergency response principles. In deployment, these weights are tunable parameters that should be calibrated in consultation with local emergency services leadership to reflect institutional priorities, regional hazard profiles, and operational experience. The architecture separates LLM classification (which requires ML expertise to modify) from the scoring function (which emergency managers can adjust without technical intervention).

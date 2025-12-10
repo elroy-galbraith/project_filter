@@ -1,16 +1,32 @@
 \section{System Architecture}
 
-TRIDENT implements a three-layer architecture where each component provides independent value while contributing to a unified triage decision. Figure~\ref{fig:system_diagram} illustrates the system flow.
+TRIDENT implements a three-layer dispatcher-support architecture where each component provides independent value while contributing to intelligent queue prioritization. The system does not make clinical triage decisions---those remain with trained dispatchers applying ESI or START protocols---but ensures dispatchers receive the highest-priority calls first along with structured information to support protocol application. Figure~\ref{fig:system_diagram} illustrates the system flow.
 
 \begin{figure}[ht]
 \centering
 \includegraphics[width=0.9\textwidth]{figures/project_filter_architecture.pdf}
-\caption{The TRIDENT architecture. The system processes raw audio through two parallel streams: (Left) A Caribbean-adapted ASR and NLP pipeline for semantic extraction and content severity scoring, and (Right) a bio-acoustic analysis layer for determining physiological distress. The Triage Decision Engine integrates three independent signals---ASR confidence, content severity, and vocal distress---ensuring that (1) calls with low transcription confidence but high vocal distress are routed to priority dispatch, and (2) semantically urgent calls from calm reporters are not under-prioritized due to absent vocal stress markers.}
+\caption{The TRIDENT architecture. The system processes raw audio through two parallel streams: (Left) A Caribbean-adapted ASR and NLP pipeline for entity extraction and content analysis, and (Right) a bio-acoustic analysis layer for detecting physiological distress markers. The \textbf{Queue Prioritization Engine} integrates three independent signals---transcription confidence, extracted clinical indicators, and vocal distress---to determine queue position for dispatcher attention. This ensures that (1) calls with low transcription confidence but high vocal distress receive immediate human review, and (2) semantically urgent calls from calm reporters are not delayed due to absent vocal stress markers. The dispatcher then applies established triage protocols (ESI for routine operations, START for mass casualty events) using both TRIDENT's extracted entities and direct audio review.}
 \label{fig:system_diagram}
 \end{figure}
+
+\subsection{Design Philosophy: Enabling Protocol Application}
+
+TRIDENT's architecture reflects a core principle: \textbf{AI should empower dispatchers to apply established protocols more effectively, not replace clinical judgment}. Caribbean health ministries have adopted validated triage frameworks, ESI for emergency departments, START for mass casualty incidents, that represent decades of clinical refinement. TRIDENT's role is to solve the \emph{input problem}: ensuring these protocols can be applied equitably to Caribbean-accented callers whose speech current ASR systems fail to transcribe accurately.
+
+Each architectural layer addresses a specific input challenge:
+
+\begin{itemize}
+    \item \textbf{Layer 1 (ASR):} Produces transcripts and confidence scores, enabling dispatchers to know when to trust text versus listen directly to audio.
+    
+    \item \textbf{Layer 2 (NLP):} Extracts structured clinical entities---location, mechanism of injury, breathing status, vulnerable populations---that map directly to ESI/START decision points.
+    
+    \item \textbf{Layer 3 (Bio-Acoustic):} Detects physiological distress markers that indicate caller crisis state, providing a signal not currently captured by standard protocols but valuable for queue prioritization.
+\end{itemize}
+
+The following subsections detail each layer's implementation.
 
 \input{subsections/architecture/asr_layer.tex}
 \input{subsections/architecture/nlp_layer.tex}
 \input{subsections/architecture/bioacoustic_layer.tex}
 \input{subsections/architecture/complementarity.tex}
-\input{subsections/architecture/triage_matrix.tex}
+\input{subsections/architecture/queue_prioritization.tex}

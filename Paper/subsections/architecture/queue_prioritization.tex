@@ -1,0 +1,111 @@
+\subsection{Queue Prioritization Engine}
+\label{sec:queue_prioritization}
+
+The Queue Prioritization Engine integrates three independent signals to determine the order in which calls receive dispatcher attention. \textbf{Critically, this system determines queue position, not clinical triage category.} Clinical triage---assigning ESI levels 1--5 or START colors (RED/YELLOW/GREEN/BLACK)---remains the responsibility of trained dispatchers applying Ministry of Health protocols.
+
+The prioritization logic ensures that:
+\begin{enumerate}
+    \item Callers most likely to need immediate intervention reach dispatchers first
+    \item Dispatchers receive structured information to support rapid protocol application
+    \item Calls with unreliable transcriptions are flagged for direct audio review
+\end{enumerate}
+
+\subsubsection{Three-Dimensional Prioritization Space}
+
+Each call is mapped to a point in prioritization space defined by:
+
+\begin{itemize}
+    \item \textbf{Transcription Confidence} ($C$): High ($\geq 0.7$) or Low ($< 0.7$)
+    \item \textbf{Content Indicators} ($S_c$): High ($\geq 50$) or Low ($< 50$)
+    \item \textbf{Bio-Acoustic Distress} ($D$): High ($> 0.5$) or Low ($\leq 0.5$)
+\end{itemize}
+
+The $2 \times 2 \times 2$ combination yields eight queue priority cells, shown in Table~\ref{tab:queue_matrix_3d}.
+
+\begin{table}[ht]
+\centering
+\small
+\begin{tabular}{@{}ccclp{4.8cm}@{}}
+\toprule
+\textbf{Confidence} & \textbf{Content} & \textbf{Concern} & \textbf{Queue} & \textbf{Dispatcher Action} \\ \midrule
+High & Low & Low & \textbf{Q5-ROUTINE} & Apply ESI using extracted entities \\
+High & High & Low & \textbf{Q2-ELEVATED} & Priority review; calm reporter, urgent content$^*$ \\
+High & Low & High & \textbf{Q3-MONITOR} & Review for anxiety vs. emergency \\
+High & High & High & \textbf{Q1-IMMEDIATE} & Immediate attention; apply ESI/START \\
+Low & Low & Low & \textbf{Q5-REVIEW} & Check audio quality; possible technical issue \\
+Low & High & Low & \textbf{Q2-ELEVATED} & Listen to audio; fragments suggest urgency \\
+Low & Low & High & \textbf{Q1-IMMEDIATE} & Priority audio review; possible dialect shift$^\dagger$ \\
+Low & High & High & \textbf{Q1-IMMEDIATE} & Highest priority; all indicators elevated \\ \bottomrule
+\end{tabular}
+\caption{Three-dimensional queue prioritization matrix. $^*$Addresses trained responder/composed bystander scenario. $^\dagger$Preserves core insight: low ASR confidence + high vocal concern may indicate stress-induced basilectal shift requiring human ears.}
+\label{tab:queue_matrix_3d}
+\end{table}
+
+\subsubsection{Queue Priority Levels}
+
+\begin{description}
+    \item[Q1-IMMEDIATE:] Top of queue. Dispatcher reviews within seconds. System flags call for potential crisis requiring direct audio assessment.
+    
+    \item[Q2-ELEVATED:] High priority queue. Dispatcher attention within 1--2 minutes. Extracted entities displayed prominently to support rapid ESI/START application.
+    
+    \item[Q3-MONITOR:] Moderate priority. May indicate anxious caller with non-urgent situation. Dispatcher assesses and de-escalates if appropriate.
+    
+    \item[Q5-ROUTINE:] Standard queue. Extracted entities available; dispatcher applies ESI at normal pace.
+    
+    \item[Q5-REVIEW:] Standard queue but flagged for audio quality check. May indicate technical issues rather than emergency content.
+\end{description}
+
+\textbf{Note on Q4:} The current matrix does not produce a Q4 outcome. Future refinement with real operational data may identify scenarios warranting an intermediate priority level.
+
+\subsubsection{Relationship to Clinical Triage Protocols}
+
+Table~\ref{tab:protocol_mapping} illustrates how TRIDENT's queue prioritization relates to---but does not replace---clinical triage protocols.
+
+\begin{table}[ht]
+\centering
+\small
+\begin{tabular}{@{}p{2.5cm}p{5cm}p{5cm}@{}}
+\toprule
+\textbf{TRIDENT Output} & \textbf{Dispatcher Action} & \textbf{Protocol Application} \\ \midrule
+Q1-IMMEDIATE & Immediate audio review; assess caller state & Dispatcher determines ESI-1/2 or START-RED based on clinical assessment \\[0.5em]
+Q2-ELEVATED & Review extracted entities; listen if uncertain & Dispatcher applies ESI using structured data; may be ESI-2 through ESI-4 \\[0.5em]
+Q3-MONITOR & Assess distress source; de-escalate if needed & Often ESI-4/5 after dispatcher determines no emergency \\[0.5em]
+Q5-ROUTINE/REVIEW & Process normally using extracted metadata & Full ESI protocol application; typically ESI-3 through ESI-5 \\ \bottomrule
+\end{tabular}
+\caption{TRIDENT queue priority does not determine clinical triage level. Dispatchers apply ESI or START protocols after reviewing TRIDENT's structured outputs and/or call audio.}
+\label{tab:protocol_mapping}
+\end{table}
+
+\subsubsection{The Two Key Insights}
+
+Two architectural insights drive the queue prioritization logic:
+
+\textbf{Content primacy for composed reporters.} The High/High/Low cell (Q2-ELEVATED) ensures that semantic urgency is not masked by calm delivery. A trained paramedic, experienced dispatcher caller, or composed witness may report ``multiple casualties, building collapse, children trapped'' in a measured professional tone. Without content analysis, such calls would languish in the queue while more emotionally expressive but less urgent callers receive attention. The Content dimension captures what paralinguistic analysis alone would miss.
+
+\textbf{Concern as dialect-shift indicator.} The Low/Low/High and Low/High/High cells both route to Q1-IMMEDIATE, preserving our original insight: low ASR confidence combined with high vocal distress signals a caller whose speech has shifted toward basilectal registers under crisis conditions. Rather than representing system failure, this pattern is the acoustic signature of genuine emergency---precisely the callers who need immediate human attention for proper triage assessment.
+
+\subsubsection{Dispatcher Interface}
+
+Figure~\ref{fig:ui_low_risk} and Figure~\ref{fig:ui_high_risk} illustrate the dispatcher interface for contrasting scenarios. The interface presents:
+
+\begin{itemize}
+    \item Queue priority level with visual urgency coding
+    \item Transcription confidence (with recommendation to review audio if low)
+    \item Extracted clinical entities mapped to ESI/START decision points
+    \item Bio-acoustic distress indicators
+    \item One-click access to call audio for direct assessment
+\end{itemize}
+
+\begin{figure}[ht]
+\centering
+\includegraphics[width=0.85\textwidth]{figures/Screenshot 2025-11-30 at 8.41.20.png}
+\caption{Dispatcher interface for a routine scenario (Q5-ROUTINE). High transcription confidence enables reliable entity extraction. The dispatcher can apply ESI protocol using the structured location, hazard type, and resource need data. Audio review is available but not flagged as necessary.}
+\label{fig:ui_low_risk}
+\end{figure}
+
+\begin{figure}[ht]
+\centering
+\includegraphics[width=0.85\textwidth]{figures/Screenshot 2025-11-30 at 8.42.43.png}
+\caption{Dispatcher interface for a high-priority scenario (Q1-IMMEDIATE). Elevated distress markers combined with low transcription confidence trigger immediate queue placement. The interface prominently recommends audio review and displays partial entity extraction with uncertainty markers. The dispatcher will listen directly and apply ESI or START protocol based on their clinical assessment.}
+\label{fig:ui_high_risk}
+\end{figure}

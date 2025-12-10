@@ -1,6 +1,6 @@
 \subsection{Layer 1: Caribbean-Tuned ASR}
 
-The ASR layer employs OpenAI's Whisper Medium model (769M parameters) fine-tuned with Low-Rank Adaptation (LoRA) on Caribbean broadcast speech. We selected Whisper Medium over Large based on Madden et al.'s \cite{madden2025} scaling law, which demonstrates diminishing returns from model size compared to domain-specific data for Caribbean varieties.
+The ASR layer employs OpenAI's Whisper Large model (769M parameters) fine-tuned with Low-Rank Adaptation (LoRA) on Caribbean broadcast speech. Competition experience suggests that Whisper Large is more accurate than Whisper Medium for Caribbean speech, even though the latter is the default model used by OpenAI. This notwithstanding, for TRIDENT, we selected Whisper Medium over Large based on Madden et al.'s \cite{madden2025} scaling law, which demonstrates diminishing returns from model size compared to domain-specific data for Caribbean varieties. Furthermore, Whisper Medium is more efficient to run on a Raspberry Pi 5, which is the edge device we are using for TRIDENT.
 
 \textbf{Fine-tuning Configuration:}
 \begin{itemize}

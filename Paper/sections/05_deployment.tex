@@ -1,5 +1,158 @@
 \section{Deployment Considerations}
 
+\subsection{Operational Context: Supporting Protocol Application}
+
+TRIDENT is designed to integrate with existing emergency dispatch workflows, not replace them. Caribbean health ministries have adopted standardized triage protocols---ESI for routine emergency department operations, START for mass casualty incidents---and TRIDENT's deployment model respects this clinical framework.
+
+\textbf{Day-to-day operations (ESI context):} TRIDENT processes incoming calls to extract structured entities (location, mechanism, clinical indicators) and assigns queue priority. Dispatchers receive calls in priority order along with extracted data that maps to ESI decision points. The dispatcher applies ESI to determine clinical acuity level (1--5) and appropriate response.
+
+\textbf{Mass casualty events (START context):} During hurricanes, earthquakes, or other disasters generating call surges, TRIDENT's queue prioritization becomes critical for managing volume that exceeds dispatcher capacity. Extracted entities map to START categories (RED/YELLOW/GREEN/BLACK), enabling dispatchers to rapidly sort callers even when transcription quality degrades due to infrastructure stress.
+
+\textbf{Key principle:} TRIDENT determines \emph{which calls dispatchers see first} and \emph{what structured information they receive}. Clinical triage decisions---ESI level assignment, START color coding, resource dispatch---remain with trained human professionals applying Ministry of Health protocols.
+
+\subsection{Operational Deployment Models}
+\label{sec:deployment_models}
+
+A critical question for any emergency AI system is: \emph{when in the call workflow does it actually operate?} TRIDENT's processing latency (45--60 seconds on edge hardware) precludes real-time transcription during live dispatcher-caller conversation. This subsection explicitly addresses the operational contexts where TRIDENT provides value, ordered from highest to lowest impact.
+
+\subsubsection{Primary Value: Surge Queue Prioritization}
+
+TRIDENT's greatest value emerges during \textbf{disaster surge conditions}---hurricanes, earthquakes, floods---when call volume exceeds dispatcher capacity and callers must wait in queue.
+
+\textbf{Operational flow:}
+\begin{enumerate}
+    \item Caller dials emergency services; all dispatchers are engaged
+    \item Caller enters queue and hears automated message: ``Please hold. Briefly describe your emergency and location.''
+    \item Caller provides initial statement (15--30 seconds)
+    \item TRIDENT processes audio while caller waits (45--60 seconds)
+    \item Queue is reordered by priority level (Q1-IMMEDIATE through Q5-ROUTINE)
+    \item When dispatcher becomes available, highest-priority call routes first
+    \item Dispatcher receives: transcription, confidence flag, extracted entities, distress indicators
+    \item Dispatcher applies ESI or START protocol with TRIDENT's structured data and/or direct audio review
+\end{enumerate}
+
+\textbf{Why this context maximizes value:}
+\begin{itemize}
+    \item Calls are waiting regardless---TRIDENT uses wait time productively
+    \item Queue prioritization ensures most critical callers reach dispatchers first
+    \item Extracted entities enable faster protocol application when dispatcher connects
+    \item Low ASR confidence flags alert dispatchers to potential dialect shift or audio quality issues before they engage
+\end{itemize}
+
+\textbf{Policy and operational requirements:}
+\begin{itemize}
+    \item Automated initial message prompting callers to describe their emergency
+    \item Integration with existing queue management infrastructure
+    \item Dispatcher training on interpreting TRIDENT outputs and priority levels
+    \item Clear protocols for when human override of queue priority is appropriate
+\end{itemize}
+
+This deployment model represents TRIDENT's primary design target. Caribbean emergency services face predictable annual surge events (hurricane season, June--November) where this capability would directly impact response effectiveness.
+
+\subsubsection{Secondary Value: Parallel Processing and Documentation Support}
+
+During normal operations when dispatchers answer immediately, TRIDENT can operate as a \textbf{parallel processing layer}---a ``second listener'' that supplements dispatcher perception.
+
+\textbf{Operational flow:}
+\begin{enumerate}
+    \item Caller dials emergency services; dispatcher answers immediately
+    \item Dispatcher begins conversation while audio streams to TRIDENT in background
+    \item Approximately 60 seconds into call, TRIDENT results appear on dispatcher screen
+    \item Dispatcher uses extracted entities to confirm or supplement their notes
+    \item TRIDENT flags low-confidence segments where dispatcher may want to re-confirm information
+    \item Structured data auto-populates CAD system fields, reducing manual entry
+\end{enumerate}
+
+\textbf{Why this context provides value:}
+
+The 2020 Jamaica ESI implementation study identified ``triage note quality'' and ``completeness of vital-sign assessment'' as key challenges contributing to poor interrater reliability \cite{french2020}. TRIDENT's structured entity extraction addresses this documentation gap:
+\begin{itemize}
+    \item Automatically extracts location, mechanism, clinical indicators during call
+    \item Provides consistent structured format regardless of individual dispatcher documentation habits
+    \item Creates audit trail of what information was captured from caller
+    \item Reduces cognitive load on dispatcher during high-stress calls
+\end{itemize}
+
+\textbf{Limitations in this context:}
+\begin{itemize}
+    \item Results arrive mid-call, not at start---less useful for initial triage decisions
+    \item Dispatcher has already heard the caller---TRIDENT confirms rather than informs
+    \item Value depends on CAD system integration and dispatcher willingness to reference parallel output
+\end{itemize}
+
+This deployment model provides incremental value during normal operations but does not transform the dispatch workflow. Its primary benefit is documentation quality and consistency rather than triage support.
+
+\subsubsection{Tertiary Value: Voicemail and Callback Triage}
+
+During extreme surge conditions when call volume overwhelms even queue capacity, calls may overflow to voicemail systems.
+
+\textbf{Operational flow:}
+\begin{enumerate}
+    \item All lines occupied, queue full; call routes to voicemail
+    \item Automated message: ``All dispatchers are currently assisting other callers. Please leave your name, location, and describe your emergency.''
+    \item TRIDENT processes voicemail messages in batch
+    \item Dispatchers receive prioritized callback list with extracted entities
+    \item Callbacks proceed in priority order
+\end{enumerate}
+
+\textbf{Why this context provides value:}
+\begin{itemize}
+    \item Batch processing suits TRIDENT's latency profile
+    \item Prioritization ensures callbacks reach critical situations first
+    \item Extracted entities enable dispatchers to prepare before callback
+\end{itemize}
+
+\textbf{Limitations:}
+\begin{itemize}
+    \item Callback introduces inherent delay---inappropriate for immediately life-threatening emergencies
+    \item Voicemail messages may be less coherent than live caller statements
+    \item Represents failure mode (overwhelmed system) rather than normal operation
+\end{itemize}
+
+This model is valid for extreme disaster scenarios but should not be considered a primary deployment target.
+
+\subsubsection{Future Potential: Automated Initial Capture}
+
+The highest-impact deployment model would involve \textbf{automated initial capture} before dispatcher connection:
+
+\begin{enumerate}
+    \item Caller dials emergency services
+    \item Automated system: ``110 Emergency. Please state your location and describe your emergency.''
+    \item System records 20--30 seconds of caller statement
+    \item TRIDENT processes while caller hears: ``Please hold, connecting you to a dispatcher''
+    \item Call routes to dispatcher who already has: transcription, entities, distress score, confidence flags
+    \item Dispatcher engages caller with full context from first word
+\end{enumerate}
+
+This model would maximize TRIDENT's value by ensuring dispatchers receive structured information \emph{before} engaging callers. However, it requires significant operational changes:
+\begin{itemize}
+    \item Modification of initial call-answering protocols
+    \item Caller acceptance of brief automated interaction before human contact
+    \item Robust fallback for callers who cannot provide verbal statements
+    \item Policy approval from health ministry and emergency services leadership
+\end{itemize}
+
+We present this model as future potential rather than current recommendation, acknowledging that workflow changes of this magnitude require extensive stakeholder consultation and pilot testing.
+
+\subsubsection{Summary: Matching Deployment to Context}
+
+\begin{table}[ht]
+\centering
+\small
+\begin{tabular}{@{}p{3cm}p{2.5cm}p{3cm}p{3.5cm}@{}}
+\toprule
+\textbf{Deployment Model} & \textbf{Operational Context} & \textbf{Primary Value} & \textbf{Requirements} \\ \midrule
+Surge Queue Prioritization & Disaster conditions, call backlog & Queue ordering, pre-dispatch context & Automated prompt, queue integration \\[0.5em]
+Parallel Processing & Normal operations & Documentation support, consistency & CAD integration, dispatcher training \\[0.5em]
+Voicemail Triage & Extreme overflow & Callback prioritization & Voicemail system, callback protocols \\[0.5em]
+Automated Initial Capture & Any (future) & Full pre-dispatch context & Significant workflow changes \\ \bottomrule
+\end{tabular}
+\caption{TRIDENT deployment models matched to operational context. Surge queue prioritization represents the primary design target; other models provide incremental value with varying implementation requirements.}
+\label{tab:deployment_models}
+\end{table}
+
+TRIDENT's architecture supports all four models, but we are explicit that \textbf{surge queue prioritization during disaster conditions} represents the scenario where the system provides maximum value with feasible operational integration. Caribbean emergency services face predictable annual surge events where this capability would directly support more equitable application of ESI and START protocols to Caribbean-accented callers.
+
 \subsection{Hardware Requirements}
 
 The complete system is designed for deployment on Raspberry Pi 5 (8GB RAM) or equivalent edge hardware:
@@ -21,26 +174,19 @@ Total system footprint: $\sim$4.5GB, well within Raspberry Pi 5 8GB capacity.
 
 \subsection{Latency Analysis}
 
-\textbf{Important Clarification:} TRIDENT is designed as a \textbf{batch triage engine for queue management during disaster surges}, not a real-time conversational assistant. The system processes completed call recordings (or call segments) to assign priority scores for dispatcher review.
-
 \textbf{End-to-end processing time for a 30-second call segment:}
 \begin{itemize}
     \item Audio preprocessing: $\sim$2 seconds
     \item ASR transcription: $\sim$10 seconds
     \item Bio-acoustic extraction: $\sim$1 second (parallel with ASR)
     \item NLP entity extraction: $\sim$30-45 seconds
-    \item Triage decision: $<$1 second
+    \item Queue priority assignment: $<$1 second
     \item \textbf{Total: $\sim$45-60 seconds}
 \end{itemize}
 
-This latency is unsuitable for real-time call answering (picking up the phone), but appropriate for:
-\begin{itemize}
-    \item \textbf{Surge triage:} When call volume exceeds dispatcher capacity, the system prioritizes the queue
-    \item \textbf{Post-call analysis:} Reviewing recorded calls for quality assurance or pattern detection
-    \item \textbf{Voicemail triage:} Processing voicemail messages left during high-volume periods
-\end{itemize}
+This latency profile is unsuitable for real-time call answering but well-matched to surge queue prioritization, where calls are waiting regardless and TRIDENT uses queue time productively (see Section~\ref{sec:deployment_models} for detailed deployment model analysis).
 
-For real-time operation, a production deployment would require GPU acceleration (e.g., NVIDIA Jetson) to reduce ASR latency to $<$3 seconds.
+For real-time operation or parallel processing during live calls, GPU acceleration (e.g., NVIDIA Jetson) would reduce total latency to under 10 seconds, enabling results to appear early in dispatcher-caller conversations.
 
 \subsection{Offline Operation}
 
@@ -49,7 +195,27 @@ All components operate without internet connectivity:
     \item Whisper model weights stored locally
     \item Llama 3 served via local Ollama instance
     \item Bio-acoustic analysis uses standard signal processing libraries
-    \item Triage logic implemented in local Python
+    \item Queue prioritization logic implemented in local Python
 \end{itemize}
 
-This enables deployment at emergency coordination centers that may lose internet connectivity during disasters while maintaining local power (generator/battery backup).
+This enables deployment at emergency coordination centers that may lose internet connectivity during disasters while maintaining local power (generator/battery backup). Critically, offline capability ensures that TRIDENT can support dispatcher application of ESI and START protocols precisely when infrastructure degradation makes accurate call processing most difficult---during the disasters that generate emergency call surges.
+
+\subsection{Integration with Existing Dispatch Systems}
+
+TRIDENT is designed as a \textbf{pre-processing layer} that integrates with, rather than replaces, existing Computer-Aided Dispatch (CAD) systems. The integration model:
+
+\begin{enumerate}
+    \item \textbf{Input:} Audio stream or recording from existing telephony infrastructure
+    \item \textbf{Processing:} TRIDENT extracts entities, computes distress indicators, assigns queue priority
+    \item \textbf{Output:} Structured data package passed to CAD system, including:
+    \begin{itemize}
+        \item Queue priority level (Q1-IMMEDIATE through Q5-ROUTINE)
+        \item Transcription with confidence score
+        \item Extracted entities mapped to ESI/START decision points
+        \item Bio-acoustic distress indicators
+        \item Flag for audio review if transcription confidence is low
+    \end{itemize}
+    \item \textbf{Dispatcher interface:} CAD system presents calls in priority order; dispatcher applies ESI or START protocol using TRIDENT's structured data and/or direct audio review
+\end{enumerate}
+
+This architecture requires no changes to clinical protocols or dispatcher training on triage methodology---only familiarization with TRIDENT's output format and the meaning of queue priority levels.
