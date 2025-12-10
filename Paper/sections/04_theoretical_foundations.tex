@@ -16,6 +16,13 @@ Furthermore, as Deschamps-Berger et al. \cite{deschampsberger2021} demonstrated,
 
 Our architecture integrates these complementary information sources based on the following thesis: \textbf{In emergency contexts, the correlation between ASR failure and genuine distress creates an opportunity to use recognition uncertainty as a routing signal rather than an error to be minimized.}
 
+\begin{figure}[ht]
+\centering
+\includegraphics[width=0.85\textwidth]{figures/trident_theoretical_model.pdf}
+\caption{The TRIDENT Integration Thesis: Stress-Induced Dialect Shift vs. ASR Performance. The model illustrates the system's theoretical foundation. Under acute stress (red arrow), speakers experience inhibitory control failure, shifting along the continuum from acrolectal (standard) to basilectal (creole) registers. As speech becomes more basilectal, ASR confidence (blue line) degrades below the usable threshold of 0.7. The ``Intervention Zone'' highlights TRIDENT's novel contribution: identifying calls where low transcription confidence coincides with high bio-acoustic distress, thereby converting a technical failure into a high-priority (Q1) routing signal.}
+\label{fig:theoretical_model}
+\end{figure}
+
 This thesis rests on the psycholinguistic literature establishing that:
 \begin{enumerate}
     \item Stress triggers cognitive load effects that impair executive function \cite{gollan2009}

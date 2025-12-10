@@ -131,6 +131,21 @@ This model would maximize TRIDENT's value by ensuring dispatchers receive struct
 
 We present this model as future potential rather than current recommendation, acknowledging that workflow changes of this magnitude require extensive stakeholder consultation and pilot testing.
 
+\subsubsection{Early Exit Architecture}
+
+To address the 45--60 second latency inherent in full three-layer processing, TRIDENT implements an early exit mechanism that bypasses NLP when ASR and bio-acoustic signals alone warrant immediate prioritization.
+
+\textbf{Early Exit Conditions:}
+\begin{enumerate}
+    \item \textbf{High Distress + Low Confidence:} If $D > 0.8$ and $C < 0.4$, route immediately to Q1-IMMEDIATE. This captures callers exhibiting extreme vocal stress whose speech has likely shifted to basilectal registers.
+
+    \item \textbf{Extreme Distress:} If $D > 0.9$ regardless of confidence, route to Q1-IMMEDIATE. Severe physiological distress warrants immediate human attention.
+\end{enumerate}
+
+Under early exit, ASR and bio-acoustics complete in approximately 12 seconds (10s transcription + 2s preprocessing, with bio-acoustic extraction parallel). NLP may continue in the background, updating the dispatcher's screen with extracted entities after the call has already been prioritized.
+
+This reduces Time-to-Q1 from approximately 55 seconds to 12 seconds for clearly distressed callers---a critical improvement for surge queue scenarios.
+
 \subsubsection{Summary: Matching Deployment to Context}
 
 \begin{table}[ht]

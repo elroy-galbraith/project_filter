@@ -44,8 +44,23 @@ D &= w_{\text{pitch}} \cdot P + w_{\text{var}} \cdot V + w_{\text{energy}} \cdot
 
 \noindent where:
 
+\noindent The pitch elevation component now uses sex-adaptive parameters:
+\begin{equation}
+P = \min\left(1.0, \max\left(0, \frac{\bar{F_0} - B}{R}\right)\right) \quad \text{(pitch elevation)}
+\end{equation}
+
+\noindent where $(B, R)$ adapts based on estimated speaker sex:
+\begin{equation}
+(B, R) = \begin{cases}
+    (120, 80) & \text{if } \bar{F_0}^{(\text{init})} < 165 \text{ Hz (estimated male)}\\
+    (200, 100) & \text{otherwise (estimated female)}
+\end{cases}
+\end{equation}
+
+The baseline $B$ and range $R$ parameters adapt based on a heuristic sex estimation from the initial 3 seconds of speech. A male speaker at 170 Hz (stressed) now contributes $P = (170-120)/80 = 0.625$ rather than the previous formulation's 0.0, addressing the male pitch penalty.
+
+\noindent The remaining components are:
 \begin{align}
-P &= \min\left(1.0, \max\left(0, \frac{\bar{F_0} - 180}{120}\right)\right) & \text{(pitch elevation)} \\
 V &= \min\left(1.0, \frac{CV_{F0}}{0.5}\right) & \text{(pitch instability)} \\
 E &= \min\left(1.0, \frac{\bar{E}}{0.1}\right) & \text{(energy)} \\
 J &= \min\left(1.0, \frac{\text{jitter}}{0.02}\right) & \text{(perturbation)}

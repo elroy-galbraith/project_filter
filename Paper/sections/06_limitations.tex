@@ -64,6 +64,20 @@ Automatic sex identification from voice is itself an imperfect classifier, parti
 
 \textbf{Caribbean Emergency Speech Corpus.} A critical enabler for future progress is a dedicated corpus combining Caribbean-accented speech with emergency domain content and stress annotations. We are exploring partnerships with Caribbean emergency services to develop such a resource, with appropriate privacy protections and community consent.
 
+\subsubsection{Data Collection Methodology: VoicefallJA}
+
+We are developing a gamified speech elicitation platform, \textit{VoicefallJA}, designed to collect stressed Caribbean speech ethically and at scale.
+
+\textbf{Game Design.} VoicefallJA presents falling-word targets that players must speak aloud before words exit the screen. Difficulty progression (increased speed, shorter response windows) induces naturalistic cognitive load, eliciting stress responses without deception. Phrase prompts span the creole continuum---from acrolectal (``The hospital is on Nelson Street'') through mesolectal (``Di hospital deh pon Nelson Street'') to basilectal (``Di haspital deh dung a Nelson Street side'')---enabling register-annotated collection.
+
+\textbf{Distribution.} The Progressive Web App is designed for WhatsApp-based distribution through institutional partnerships, specifically Methodist Church in the Caribbean and the Americas (MCCA) congregational networks spanning Jamaica and Montserrat. Target: 100--300 speakers, 5,000+ utterances.
+
+\textbf{Ethical Framework.} Our consent model includes: (1) persistent recording indicators, (2) ``panic button'' mid-session revocation, (3) play-only mode without audio recording, and (4) community benefit mechanisms ensuring Caribbean communities receive value from their linguistic contributions.
+
+\textbf{Annotation Schema.} Each utterance is annotated with: register label (ACR/MES/BAS), game-induced stress level (1--5), prosodic features (F0 mean/SD, jitter, shimmer, speech rate), and optional demographics.
+
+\textbf{Timeline.} Q1 2026: beta launch; Q2--Q3 2026: data collection; Q3 2026: dataset release targeting 20+ hours of register-annotated speech.
+
 \textbf{Empirical validation.} End-to-end evaluation with emergency dispatch professionals assessing whether TRIDENT's queue prioritization aligns with expert judgment. This should include:
 \begin{itemize}
     \item Comparison of three-dimensional prioritization against two-dimensional (confidence $\times$ distress) baseline
