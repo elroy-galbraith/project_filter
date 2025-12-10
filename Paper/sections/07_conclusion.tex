@@ -1,10 +1,8 @@
 \section{Conclusion}
 
-TRIDENT presents a dispatcher-support architecture for Caribbean emergency speech processing that treats ASR limitations not as failures to be hidden but as signals to inform queue prioritization. By combining accent-adapted speech recognition, local NLP entity extraction, and bio-acoustic distress detection, the system empowers dispatchers to apply established triage protocols---ESI for routine operations, START for mass casualty events---even when automated transcription fails.
+TRIDENT presents a dispatcher-support architecture that ensures Caribbean-accented emergency callers receive equitable access to ESI and START triage protocols. By combining accent-adapted speech recognition, local NLP entity extraction, and bio-acoustic distress detection, the system empowers dispatchers to apply established protocols even when automated transcription fails.
 
-The key insight is that low ASR confidence combined with high vocal distress signals a caller requiring priority human attention. Rather than representing system failure, this pattern is the acoustic signature of a caller in genuine crisis whose speech has shifted toward basilectal registers under stress. TRIDENT ensures these callers reach dispatchers first, enabling timely application of ESI or START protocols to those who need them most urgently.
-
-A complementary insight drives the content analysis layer: trained professionals and composed bystanders may report critical emergencies without elevated vocal stress. By extracting clinical entities that map to ESI/START decision points, TRIDENT ensures that calm delivery of urgent content does not delay dispatcher attention.
+The architecture operationalizes two complementary insights established in Section~\ref{sec:key_insights}: that ASR uncertainty combined with vocal distress signals priority callers requiring human attention, and that calm delivery of urgent content must not delay dispatcher response. These insights drive the three-dimensional queue prioritization matrix that routes calls based on confidence, content, and concern signals.
 
 Critically, TRIDENT respects the clinical authority of established protocols. The system determines which calls dispatchers see first and provides structured information to support rapid protocol application---but triage decisions remain with trained human professionals. This design philosophy reflects a broader principle for emergency AI: technology should empower human expertise, not attempt to replace it.
 

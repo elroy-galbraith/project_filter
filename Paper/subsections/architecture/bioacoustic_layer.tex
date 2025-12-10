@@ -68,13 +68,4 @@ The weights reflect relative reliability from the literature:
 
 These thresholds are calibrated against Van Puyvelde et al.'s \cite{vanpuyvelde2018} findings on vocal markers in emergency versus baseline speech.
 
-\subsubsection{Sex Differences in Baseline F0}
-\label{sec:sex_differences}
-
-A methodological consideration is the substantial difference in baseline fundamental frequency between male speakers (typically 85--175 Hz) and female speakers (165--270 Hz) \cite{titze1989, traunmuller1995}. Setting a single absolute F0 threshold for distress detection risks differential sensitivity: a female speaker might cross a high absolute threshold with moderate stress, while a male speaker might require extreme distress to reach the same value.
-
-We address this limitation through two strategies. First, we prioritize \textbf{normalized and relative measures}: the coefficient of variation ($CV = \sigma_{F0} / \mu_{F0}$) captures pitch instability independent of baseline, and jitter measures cycle-to-cycle perturbations that research shows are ``relatively independent from prosodic patterns'' \cite{vanpuyvelde2018}. Second, we reduce the weight assigned to absolute F0 elevation relative to normalized measures.
-
-Importantly, research on psychosocial stress indicates that the \textit{direction} and \textit{pattern} of vocal changes under stress show ``striking parallels in men and women'' \cite{pisanski2018}---both sexes exhibit increased pitch mean, minimum, and variation during acute stress. The challenge is not that stress manifests differently, but that baseline values differ.
-
-\textbf{Limitation.} The current threshold values are derived from literature on non-Caribbean, predominantly Western populations. Automatic sex identification from voice is itself an imperfect classifier, particularly for voices near the overlap region of male and female F0 distributions. Rather than introduce a potentially error-prone sex classification step, we employ sex-normalized features (CV, jitter) weighted more heavily than absolute F0. A validation study with sex-stratified analysis on Caribbean emergency calls is essential to: (1) calibrate population-appropriate thresholds, (2) confirm that normalized measures maintain sensitivity across speaker demographics, and (3) determine whether Caribbean populations exhibit different baseline distributions requiring adjustment.
+\textbf{Note on sex differences:} The distress score prioritizes sex-normalized features (CV, jitter) over absolute F0 elevation to mitigate the substantial baseline differences between male (85--175 Hz) and female (165--270 Hz) speakers. See Section~\ref{sec:sex_limitations} for detailed discussion of remaining bias risks.

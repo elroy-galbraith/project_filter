@@ -55,22 +55,19 @@ During normal operations when dispatchers answer immediately, TRIDENT can operat
 
 \textbf{Operational flow:}
 \begin{enumerate}
-    \item Caller dials emergency services; dispatcher answers immediately
-    \item Dispatcher begins conversation while audio streams to TRIDENT in background
+    \item Dispatcher answers immediately and begins conversation
+    \item Audio streams to TRIDENT in background
     \item Approximately 60 seconds into call, TRIDENT results appear on dispatcher screen
-    \item Dispatcher uses extracted entities to confirm or supplement their notes
-    \item TRIDENT flags low-confidence segments where dispatcher may want to re-confirm information
+    \item Dispatcher uses extracted entities to confirm notes and supplement information
     \item Structured data auto-populates CAD system fields, reducing manual entry
 \end{enumerate}
 
 \textbf{Why this context provides value:}
-
-The 2020 Jamaica ESI implementation study identified ``triage note quality'' and ``completeness of vital-sign assessment'' as key challenges contributing to poor interrater reliability \cite{french2020}. TRIDENT's structured entity extraction addresses this documentation gap:
 \begin{itemize}
-    \item Automatically extracts location, mechanism, clinical indicators during call
-    \item Provides consistent structured format regardless of individual dispatcher documentation habits
-    \item Creates audit trail of what information was captured from caller
-    \item Reduces cognitive load on dispatcher during high-stress calls
+    \item Structured entity extraction improves documentation quality and consistency
+    \item Automatic capture reduces cognitive load during high-stress calls
+    \item Creates audit trail of information captured from caller
+    \item Low-confidence flags alert dispatcher to segments requiring re-confirmation
 \end{itemize}
 
 \textbf{Limitations in this context:}

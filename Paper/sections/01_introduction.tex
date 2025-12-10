@@ -4,11 +4,7 @@ When a caller dials emergency services during a crisis, the interaction between 
 
 \subsection{Clinical Context: Established Triage Protocols}
 
-Caribbean health ministries have adopted internationally-validated triage protocols to standardize emergency response. Jamaica's Ministry of Health implemented the Emergency Severity Index (ESI)---a five-level acuity scale widely used in the United States and globally---across all 19 public hospital emergency departments in 2016 \cite{french2020}. The ESI algorithm stratifies patients from Level 1 (immediate lifesaving intervention required) to Level 5 (no resources needed), based on acuity assessment and anticipated resource utilization.
-
-For mass casualty events such as hurricanes, the START (Simple Triage and Rapid Treatment) protocol provides rapid four-category sorting: BLACK (deceased/expectant), RED (immediate), YELLOW (delayed), and GREEN (walking wounded). The ESI handbook explicitly notes that ESI should \emph{not} be used during mass casualty incidents, where START or similar rapid triage systems are appropriate \cite{esi_handbook}.
-
-However, a 2020 evaluation of ESI implementation in Jamaica found poor interrater reliability between Jamaican practitioners and ESI experts, with triage note quality, completeness of vital sign assessment, and high staff attrition identified as key challenges \cite{french2020}. These protocols assume dispatchers and triage nurses can accurately capture caller and patient information---an assumption that fails systematically when ASR systems cannot reliably transcribe Caribbean speech.
+Caribbean health ministries have adopted internationally-validated triage protocols to standardize emergency response: the Emergency Severity Index (ESI) for routine operations and START (Simple Triage and Rapid Treatment) for mass casualty events. These protocols assume dispatchers can accurately capture caller information---an assumption that fails systematically when ASR systems cannot reliably transcribe Caribbean speech.
 
 \subsection{TRIDENT: Dispatcher-Empowered Architecture}
 
@@ -25,6 +21,7 @@ However, a 2020 evaluation of ESI implementation in Jamaica found poor interrate
 \end{enumerate}
 
 \subsection{Key Insights}
+\label{sec:key_insights}
 
 Two complementary insights motivate this design:
 
@@ -35,20 +32,18 @@ Two complementary insights motivate this design:
 \end{enumerate}
 
 \subsection{Addressing Gaps in Emergency AI}
+\label{sec:addressing_gaps}
 
 The architecture addresses four gaps in existing emergency AI systems:
 
 \begin{enumerate}
-    \item \textbf{Cloud dependency:} Existing systems rely on cloud-based, accent-agnostic ASR that fails during infrastructure outages common in disasters.
-    
-    \item \textbf{Text-only analysis:} Current approaches focus exclusively on textual features, ignoring paralinguistic stress signals that may indicate caller distress even when words are unclear.
-    
-    \item \textbf{Dialect blindness:} No consideration of dialect continua or stress-induced register shifting that characterizes Caribbean (and other bidialectal) speech communities.
-    
-    \item \textbf{Infrastructure fragility:} Inability to function during the communication infrastructure failures that commonly accompany the disasters when emergency services are most needed.
+    \item \textbf{Cloud dependency} with accent-agnostic ASR
+    \item \textbf{Text-only analysis} ignoring paralinguistic stress signals
+    \item \textbf{Dialect blindness} to stress-induced register shifting
+    \item \textbf{Infrastructure fragility} during disaster scenarios
 \end{enumerate}
 
-Critically, TRIDENT addresses these gaps while \textbf{respecting the clinical authority of established protocols}. The system structures inputs and prioritizes dispatcher queues, but triage decisions remain with trained human professionals applying Ministry of Health-mandated frameworks. TRIDENT empowers dispatchers with better information; it does not replace their judgment.
+Critically, TRIDENT addresses these gaps while \textbf{respecting the clinical authority of established protocols}. The system structures inputs and prioritizes dispatcher queues, but triage decisions remain with trained human professionals applying Ministry of Health-mandated frameworks.
 
 \subsection{Scope and Generalizability}
 

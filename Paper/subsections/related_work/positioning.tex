@@ -1,16 +1,18 @@
 \subsection{Summary: Positioning Our Contribution}
 
-The literature reveals a clear opportunity space for Caribbean emergency services. Existing dispatch AI systems---while valuable as dispatcher-support tools---uniformly exhibit limitations that preclude effective deployment in Caribbean contexts:
+The literature reveals a clear opportunity space for Caribbean emergency services. As introduced in Section~\ref{sec:addressing_gaps}, existing dispatch AI systems exhibit four critical limitations for Caribbean deployment: cloud dependency with accent-agnostic ASR, text-only analysis, dialect blindness, and infrastructure fragility.
 
-\begin{enumerate}
-    \item \textbf{Cloud dependency with accent-agnostic ASR:} Systems like ECA and Corti rely on commercial cloud APIs (Google Speech-to-Text, etc.) that show documented performance degradation on non-standard English varieties, with no adaptation for Caribbean accents or creole continua.
-    
-    \item \textbf{Text-only analysis:} Current approaches process only transcribed text, ignoring paralinguistic stress signals that may indicate caller distress even when words are unclear or mistranscribed.
-    
-    \item \textbf{Dialect blindness:} No existing system accounts for stress-induced register shifting---the phenomenon whereby speakers under acute stress revert toward basilectal (more creole-heavy) varieties, precisely when accurate transcription matters most.
-    
-    \item \textbf{Infrastructure fragility:} Cloud-dependent architectures fail during the communication infrastructure degradation that commonly accompanies hurricanes, earthquakes, and floods---the disasters that generate emergency call surges.
-\end{enumerate}
+\textbf{How the literature establishes each gap:}
+
+\begin{itemize}
+    \item \textbf{Cloud dependency:} ECA and Corti rely on commercial cloud APIs (Google Speech-to-Text) with documented performance degradation on non-standard English varieties (Section 2.1, Madden et al. scaling law findings). No existing system adapts for Caribbean accents or creole continua.
+
+    \item \textbf{Text-only analysis:} Current approaches process only transcribed text, ignoring paralinguistic stress signals documented in Section 2.3 (Van Puyvelde et al., Schmalz et al.). This misses critical information when words are unclear or mistranscribed.
+
+    \item \textbf{Dialect blindness:} No existing system accounts for stress-induced register shifting demonstrated in Section 2.4 (inhibitory control model, creole continuum research)---the phenomenon whereby speakers under acute stress revert toward basilectal varieties, precisely when accurate transcription matters most.
+
+    \item \textbf{Infrastructure fragility:} Hurricane Maria case (Section 2.5) demonstrates how cloud-dependent architectures fail during the disasters that generate emergency call surges.
+\end{itemize}
 
 \textbf{TRIDENT's contribution} is a dispatcher-support architecture that addresses each gap while respecting the clinical authority of established triage protocols:
 

@@ -76,14 +76,6 @@ Q5-ROUTINE/REVIEW & Process normally using extracted metadata & Full ESI protoco
 \label{tab:protocol_mapping}
 \end{table}
 
-\subsubsection{The Two Key Insights}
-
-Two architectural insights drive the queue prioritization logic:
-
-\textbf{Content primacy for composed reporters.} The High/High/Low cell (Q2-ELEVATED) ensures that semantic urgency is not masked by calm delivery. A trained paramedic, experienced dispatcher caller, or composed witness may report ``multiple casualties, building collapse, children trapped'' in a measured professional tone. Without content analysis, such calls would languish in the queue while more emotionally expressive but less urgent callers receive attention. The Content dimension captures what paralinguistic analysis alone would miss.
-
-\textbf{Concern as dialect-shift indicator.} The Low/Low/High and Low/High/High cells both route to Q1-IMMEDIATE, preserving our original insight: low ASR confidence combined with high vocal distress signals a caller whose speech has shifted toward basilectal registers under crisis conditions. Rather than representing system failure, this pattern is the acoustic signature of genuine emergency---precisely the callers who need immediate human attention for proper triage assessment.
-
 \subsubsection{Dispatcher Interface}
 
 Figure~\ref{fig:ui_low_risk} and Figure~\ref{fig:ui_high_risk} illustrate the dispatcher interface for contrasting scenarios. The interface presents:

@@ -18,19 +18,26 @@
 
 \textbf{Bio-acoustic threshold calibration.} Distress detection thresholds are derived from literature on non-Caribbean, predominantly Western populations. Baseline vocal characteristics may vary across Caribbean demographics, requiring population-specific calibration.
 
-\textbf{Sex differences in F0 baseline.} Fundamental frequency is sexually dimorphic: male voices typically range 85--175 Hz while female voices range 165--270 Hz \cite{titze1989}. We partially address this through architectural choices:
+\subsection{Sex Differences in F0 Baseline}
+\label{sec:sex_limitations}
+
+Fundamental frequency is sexually dimorphic: male voices typically range 85--175 Hz while female voices range 165--270 Hz \cite{titze1989, traunmuller1995}. Setting a single absolute F0 threshold for distress detection risks differential sensitivity across speaker sex.
+
+\textbf{Architectural mitigation strategies:}
 \begin{itemize}
-    \item Prioritizing sex-normalized features: F0 coefficient of variation ($CV = \sigma_{F0} / \mu_{F0}$) and jitter, which measure relative instability rather than absolute values
-    \item Weighting normalized features (CV: 0.35, jitter: 0.15) more heavily than absolute F0 elevation (0.30)
+    \item Prioritizing sex-normalized features: F0 coefficient of variation ($CV = \sigma_{F0} / \mu_{F0}$) captures pitch instability independent of baseline; jitter measures cycle-to-cycle perturbations that are ``relatively independent from prosodic patterns'' \cite{vanpuyvelde2018}
+    \item Weighting normalized features (CV: 0.35, jitter: 0.15) more heavily than absolute F0 elevation (0.30) in the distress score calculation
 \end{itemize}
 
-\noindent However, residual bias likely remains. Research confirms that stress manifests with ``striking parallels in men and women'' \cite{pisanski2018}---both sexes show increased pitch mean and variation under stress---but our reliance on any absolute F0 component creates risk:
+Research confirms that stress manifests with ``striking parallels in men and women'' \cite{pisanski2018}---both sexes show increased pitch mean, minimum, and variation under acute stress. The challenge is not that stress manifests differently, but that baseline values differ.
+
+\textbf{Residual bias risks:}
 \begin{itemize}
     \item \textbf{False positive risk:} A relaxed female speaker near the upper baseline range may contribute to elevated distress scores
     \item \textbf{False negative risk:} A stressed male speaker with naturally low F0 may not contribute sufficiently to the pitch component
 \end{itemize}
 
-\noindent A validation study with sex-stratified analysis is essential to quantify this bias and determine whether further threshold adjustment or feature re-weighting is required.
+Automatic sex identification from voice is itself an imperfect classifier, particularly for voices near the overlap region of male and female F0 distributions. Rather than introduce a potentially error-prone sex classification step, we employ the sex-normalized feature strategy above. A validation study with sex-stratified analysis on Caribbean emergency calls is essential to: (1) calibrate population-appropriate thresholds, (2) confirm that normalized measures maintain sensitivity across speaker demographics, and (3) determine whether Caribbean populations exhibit different baseline distributions requiring adjustment.
 
 \textbf{Content indicator classification.} The Content Indicator Score depends on LLM classification quality. While leveraging Llama 3's semantic understanding avoids brittle keyword matching, it introduces new failure modes:
 \begin{itemize}
