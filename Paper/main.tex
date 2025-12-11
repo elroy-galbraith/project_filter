@@ -51,11 +51,11 @@
 
 % Abstract
 \begin{abstract}
-    Emergency speech recognition systems exhibit systematic performance degradation on non-standard English varieties, creating a critical gap in services for Caribbean populations. We present TRIDENT (\textbf{T}ranscription and \textbf{R}outing \textbf{I}ntelligence for \textbf{D}ispatcher-\textbf{E}mpowered \textbf{N}ational \textbf{T}riage), a three-layer dispatcher-support architecture designed to structure emergency call inputs for human application of established triage protocols (the Emergency Severity Index for routine operations and START for mass casualty events), even when automatic speech recognition fails.
+	Emergency speech recognition systems exhibit systematic performance degradation on non-standard English varieties, creating a critical gap in services for Caribbean populations. We present TRIDENT (\textbf{T}ranscription and \textbf{R}outing \textbf{I}ntelligence for \textbf{D}ispatcher-\textbf{E}mpowered \textbf{N}ational \textbf{T}riage), a three-layer dispatcher-support architecture designed to structure emergency call inputs for human application of established triage protocols (the ESI for routine operations and START for mass casualty events), even when automatic speech recognition fails.
 
-    The system combines Caribbean-accent-tuned ASR, local entity extraction via large language models, and bio-acoustic distress detection to provide dispatchers with three complementary signals: transcription confidence, structured clinical entities, and vocal stress indicators. \textbf{Our key insight is that low ASR confidence, rather than representing system failure, serves as a valuable queue prioritization signal---particularly when combined with elevated vocal distress markers indicating a caller in crisis whose speech may have shifted toward basilectal registers.} A complementary insight drives the entity extraction layer: trained responders and composed bystanders may report life-threatening emergencies without elevated vocal stress, requiring semantic analysis to capture clinical indicators that paralinguistic features miss.
+	The system combines Caribbean-accent-tuned ASR, local entity extraction via large language models, and bio-acoustic distress detection to provide dispatchers with three complementary signals: transcription confidence, structured clinical entities, and vocal stress indicators. \textbf{Our key insight is that low ASR confidence, rather than representing system failure, serves as a valuable queue prioritization signal---particularly when combined with elevated vocal distress markers indicating a caller in crisis whose speech may have shifted toward basilectal registers.} A complementary insight drives the entity extraction layer: trained responders and composed bystanders may report life-threatening emergencies without elevated vocal stress, requiring semantic analysis to capture clinical indicators that paralinguistic features miss.
 
-    We describe the architectural design, theoretical grounding in psycholinguistic research on stress-induced code-switching, and deployment considerations for offline operation during disaster scenarios. This work establishes a framework for accent-resilient emergency AI that ensures Caribbean voices receive equitable access to established national triage protocols. Empirical validation on Caribbean emergency calls remains future work.
+	We describe the architectural design, theoretical grounding in psycholinguistic research on stress-induced code-switching, and deployment considerations for offline operation during disaster scenarios. This work establishes a framework for accent-resilient emergency AI that ensures Caribbean voices receive equitable access to established national triage protocols. Empirical validation on Caribbean emergency calls remains future work.
 \end{abstract}
 
 % Keywords
@@ -66,8 +66,8 @@
 % Main sections
 \input{sections/01_introduction.tex}
 \input{sections/02_related_work.tex}
-\input{sections/03_system_architecture.tex}
 \input{sections/04_theoretical_foundations.tex}
+\input{sections/03_system_architecture.tex}
 \input{sections/05_deployment.tex}
 \input{sections/06_limitations.tex}
 \input{sections/07_conclusion.tex}

@@ -1,23 +1,21 @@
 \section{Introduction}
 
-When a caller dials emergency services during a crisis, the interaction between human distress and automated systems creates a critical dependency on speech recognition accuracy. Modern automatic speech recognition (ASR) systems, however, exhibit well-documented performance disparities across demographic groups \cite{koenecke2020}. For Caribbean English speakers---a population of over 40 million across the Anglophone Caribbean and diaspora---these disparities compound with a linguistic phenomenon: under acute stress, speakers tend to shift toward basilectal (more creole-heavy) speech registers, precisely the varieties on which ASR systems perform worst.
+When a caller dials emergency services during a crisis, modern automatic speech recognition (ASR) systems exhibit well-documented performance disparities across demographic groups \cite{koenecke2020}. For Caribbean English speakers---a population of over 40 million---these disparities compound with a linguistic phenomenon: under acute stress, speakers tend to shift toward basilectal (more creole-heavy) speech registers, precisely the varieties on which ASR systems perform worst.
 
-\subsection{Clinical Context: Established Triage Protocols}
-
-Caribbean health ministries have adopted internationally-validated triage protocols to standardize emergency response: the Emergency Severity Index (ESI) for routine operations and START (Simple Triage and Rapid Treatment) for mass casualty events. These protocols assume dispatchers can accurately capture caller information---an assumption that fails systematically when ASR systems cannot reliably transcribe Caribbean speech.
+Caribbean health ministries have adopted internationally-validated triage protocols: the Emergency Severity Index (ESI) for routine operations and START (Simple Triage and Rapid Treatment) for mass casualty events. These protocols assume dispatchers can accurately capture caller information---an assumption that fails systematically when ASR systems cannot reliably transcribe Caribbean speech.
 
 \subsection{TRIDENT: Dispatcher-Empowered Architecture}
 
-\textbf{This paper presents TRIDENT (\textbf{T}ranscription and \textbf{R}outing \textbf{I}ntelligence for \textbf{D}ispatcher-\textbf{E}mpowered \textbf{N}ational \textbf{T}riage), an architectural framework} designed not to replace established triage protocols, but to ensure Caribbean-accented callers receive equitable access to them. Rather than attempting to eliminate ASR errors on Caribbean speech---an unrealistic goal given current technology---we build a \textbf{dispatcher-support system} that remains functional when transcription fails. \textbf{We frame this work as a position paper and system proposal}, establishing theoretical foundations and design rationale while acknowledging that end-to-end empirical validation on Caribbean emergency calls remains future work.
+\textbf{This paper presents TRIDENT (\textbf{T}ranscription and \textbf{R}outing \textbf{I}ntelligence for \textbf{D}ispatcher-\textbf{E}mpowered \textbf{N}ational \textbf{T}riage)}, designed to ensure Caribbean-accented callers receive equitable access to established triage protocols. Rather than attempting to eliminate ASR errors---an unrealistic goal---we build a \textbf{dispatcher-support system} that remains functional when transcription fails.
 
-\textbf{Our central contribution is a three-layer dispatcher-support framework} that provides human dispatchers with structured inputs for protocol application. The system generates three complementary signals:
+\textbf{Our central contribution is a three-layer framework} providing dispatchers with structured inputs for protocol application:
 
 \begin{enumerate}
-    \item \textbf{Transcription confidence:} Flags unreliable transcripts so dispatchers know to listen directly to call audio rather than relying on text alone.
-    
-    \item \textbf{Structured entity extraction:} Extracts clinical indicators needed for ESI/START application---location, mechanism of injury, breathing status, number of persons affected, presence of vulnerable populations---even from partial or degraded transcriptions.
-    
-    \item \textbf{Bio-acoustic distress detection:} Provides a novel signal not currently captured by standard triage protocols---physiological stress markers derived from vocal acoustics that indicate caller crisis state independent of transcript content.
+    \item \textbf{Transcription confidence:} Flags unreliable transcripts so dispatchers know to listen directly to audio
+
+    \item \textbf{Structured entity extraction:} Extracts clinical indicators (location, mechanism, breathing status, vulnerable populations) even from degraded transcriptions
+
+    \item \textbf{Bio-acoustic distress detection:} Provides physiological stress markers independent of transcript content
 \end{enumerate}
 
 \subsection{Key Insights}
@@ -26,32 +24,9 @@ Caribbean health ministries have adopted internationally-validated triage protoc
 Two complementary insights motivate this design:
 
 \begin{enumerate}
-    \item \textbf{Content beyond voice:} Trained first responders, medical professionals, and composed bystanders may report life-threatening emergencies without elevated vocal stress. Semantic extraction of clinical entities captures information that paralinguistic features alone would miss---ensuring that ``children trapped in burning building,'' spoken calmly, provides dispatchers with the structured data needed for appropriate ESI or START classification.
-    
-    \item \textbf{Uncertainty as prioritization signal:} Low ASR confidence, rather than representing system failure, serves as a valuable indicator for queue prioritization---particularly when combined with elevated vocal distress markers indicating a caller in crisis whose speech may have shifted toward basilectal registers. This reframes accent-induced transcription errors from bugs into features that correlate with genuine caller distress, ensuring these callers receive priority human attention for proper triage assessment.
+    \item \textbf{Content beyond voice:} Trained responders and composed bystanders may report life-threatening emergencies without elevated vocal stress. Semantic extraction captures information that paralinguistic features miss---ensuring ``children trapped in burning building,'' spoken calmly, provides dispatchers with structured data for appropriate triage classification.
+
+    \item \textbf{Uncertainty as prioritization signal:} Low ASR confidence, rather than representing failure, serves as a queue prioritization indicator---particularly when combined with elevated vocal distress marking a caller in crisis whose speech may have shifted toward basilectal registers. This reframes accent-induced transcription errors from bugs into features correlating with genuine distress.
 \end{enumerate}
 
-\subsection{Addressing Gaps in Emergency AI}
-\label{sec:addressing_gaps}
-
-The architecture addresses four gaps in existing emergency AI systems:
-
-\begin{enumerate}
-    \item \textbf{Cloud dependency} with accent-agnostic ASR
-    \item \textbf{Text-only analysis} ignoring paralinguistic stress signals
-    \item \textbf{Dialect blindness} to stress-induced register shifting
-    \item \textbf{Infrastructure fragility} during disaster scenarios
-\end{enumerate}
-
-Critically, TRIDENT addresses these gaps while \textbf{respecting the clinical authority of established protocols}. The system structures inputs and prioritizes dispatcher queues, but triage decisions remain with trained human professionals applying Ministry of Health-mandated frameworks.
-
-\subsection{Scope and Generalizability}
-
-\textbf{Note on stress-induced register shift:} While we focus on Caribbean creole continua, the phenomenon of dialect reversion under cognitive load is not unique to this population. The inhibitory control model of bilingual processing \cite{green1998} and research on the Lombard effect (speech modifications in noisy environments) suggest our framework may generalize to other bidialectal populations worldwide. Caribbean emergency services serve as our motivating case study, but the architectural principles apply broadly to any context where:
-
-\begin{itemize}
-    \item Speakers use dialectal varieties underrepresented in ASR training data
-    \item Stress may induce shifts toward non-standard registers
-    \item Established triage protocols require accurate capture of caller information
-    \item Infrastructure resilience is critical for emergency response
-\end{itemize}
+TRIDENT addresses critical gaps in existing emergency AI---cloud dependency with accent-agnostic ASR, text-only analysis ignoring paralinguistic signals, dialect blindness to stress-induced register shifting, and infrastructure fragility during disasters---while \textbf{respecting the clinical authority of established protocols}. The system structures inputs and prioritizes queues, but triage decisions remain with trained professionals applying Ministry of Health-mandated frameworks.

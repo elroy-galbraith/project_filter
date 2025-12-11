@@ -1,29 +1,15 @@
 \subsection{Summary: Positioning Our Contribution}
 
-The literature reveals a clear opportunity space for Caribbean emergency services. As introduced in Section~\ref{sec:addressing_gaps}, existing dispatch AI systems exhibit four critical limitations for Caribbean deployment: cloud dependency with accent-agnostic ASR, text-only analysis, dialect blindness, and infrastructure fragility.
-
-\textbf{How the literature establishes each gap:}
+TRIDENT addresses four critical gaps in existing emergency dispatch AI for Caribbean deployment:
 
 \begin{itemize}
-    \item \textbf{Cloud dependency:} ECA and Corti rely on commercial cloud APIs (Google Speech-to-Text) with documented performance degradation on non-standard English varieties (Section 2.1, Madden et al. scaling law findings). No existing system adapts for Caribbean accents or creole continua.
+    \item \textbf{Caribbean-adapted ASR:} Fine-tuned Whisper models (informed by Madden et al.'s scaling laws) provide transcription accuracy for Caribbean speech varieties, enabling viable downstream entity extraction.
 
-    \item \textbf{Text-only analysis:} Current approaches process only transcribed text, ignoring paralinguistic stress signals documented in Section 2.3 (Van Puyvelde et al., Schmalz et al.). This misses critical information when words are unclear or mistranscribed.
+    \item \textbf{Multimodal distress detection:} Parallel bio-acoustic analysis provides a signal pathway that functions even when ASR fails, transforming low transcription confidence from a limitation into a queue prioritization feature.
 
-    \item \textbf{Dialect blindness:} No existing system accounts for stress-induced register shifting demonstrated in Section 2.4 (inhibitory control model, creole continuum research)---the phenomenon whereby speakers under acute stress revert toward basilectal varieties, precisely when accurate transcription matters most.
+    \item \textbf{Stress-aware design:} Accounts for stress-induced register shifting along the creole continuum---routing calls with elevated vocal distress and low ASR confidence to immediate human attention.
 
-    \item \textbf{Infrastructure fragility:} Hurricane Maria case (Section 2.5) demonstrates how cloud-dependent architectures fail during the disasters that generate emergency call surges.
-\end{itemize}
-
-\textbf{TRIDENT's contribution} is a dispatcher-support architecture that addresses each gap while respecting the clinical authority of established triage protocols:
-
-\begin{itemize}
-    \item \textbf{Caribbean-adapted ASR:} Fine-tuned Whisper models provide the transcription accuracy that makes downstream entity extraction viable for Caribbean speech varieties.
-    
-    \item \textbf{Structured entity extraction:} Local Llama 3-based NLP extracts clinical indicators needed for ESI/START application---location, mechanism of injury, breathing status, vulnerable populations---operating without internet connectivity.
-    
-    \item \textbf{Bio-acoustic distress detection:} A parallel signal pathway that functions even when ASR fails, transforming low transcription confidence from a system limitation into a queue prioritization feature that routes distressed callers to immediate human attention.
-    
     \item \textbf{Offline operation:} Complete system deployment on edge hardware (Raspberry Pi 5) enables function during infrastructure failures when emergency services are most critical.
 \end{itemize}
 
-The result is the first dispatcher-support system designed specifically for Caribbean emergency services---not to make triage decisions, but to ensure that Caribbean-accented callers receive equitable access to the ESI and START protocols that their health ministries have adopted. TRIDENT empowers dispatchers with better information and intelligent queue prioritization; clinical judgment remains where it belongs---with trained human professionals.
+The result is the first dispatcher-support system designed specifically for Caribbean emergency services---not to make triage decisions, but to ensure Caribbean-accented callers receive equitable access to the ESI and START protocols that their health ministries have adopted. TRIDENT empowers dispatchers with better information and intelligent queue prioritization; clinical judgment remains with trained human professionals.

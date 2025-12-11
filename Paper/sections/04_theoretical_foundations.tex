@@ -1,22 +1,14 @@
 \section{Theoretical Foundations}
 
-\subsection{Why Accent-Tuned ASR Is Necessary But Insufficient}
+Fine-tuning Whisper on Caribbean speech improves transcription but cannot eliminate the accent gap. Madden et al. \cite{madden2025} achieved 30\% WER on Jamaican Patois---dramatic improvement from 89\% baseline, but still far above the $<$5\% WER typical for standard English. Moreover, fine-tuning on broadcast speech cannot capture emergency acoustics: elevated noise, emotional qualities, and stress-induced basilectal reversion. ASR alone will fail when needed most.
 
-Fine-tuning Whisper on Caribbean speech will improve transcription accuracy, but it cannot eliminate the accent gap entirely. Madden et al. \cite{madden2025} achieved 30\% WER on Jamaican Patois with fine-tuning---a dramatic improvement from 89\% baseline, but still far above the $<$5\% WER typical for standard English. In emergency contexts, even 30\% WER means nearly one-third of words may be incorrect, potentially including critical location or hazard information.
-
-Moreover, fine-tuning on broadcast speech cannot fully capture emergency speech characteristics: elevated noise (sirens, screaming, wind), emotional vocal qualities, and the stress-induced basilectal reversion discussed above. A system relying solely on ASR, no matter how well-tuned, will fail precisely when it is needed most.
-
-\subsection{Why Bio-Acoustic Analysis Is Necessary But Insufficient}
-
-Conversely, bio-acoustic distress detection alone cannot provide the semantic information needed for emergency dispatch. A caller may exhibit extreme vocal stress while saying ``my house is on fire'' or ``I lost my keys''---the distress signal is identical, but the appropriate response differs dramatically.
-
-Furthermore, as Deschamps-Berger et al. \cite{deschampsberger2021} demonstrated, laboratory accuracy of emotion recognition systems (63\%) drops substantially in real emergency calls (45.6\%). Bio-acoustic features provide reliable \emph{gradient} information about caller state but cannot substitute for semantic content.
+Conversely, bio-acoustic distress detection cannot provide semantic information needed for dispatch. A caller may exhibit extreme vocal stress while saying ``my house is on fire'' or ``I lost my keys''---identical distress signals but dramatically different responses. Furthermore, Deschamps-Berger et al. \cite{deschampsberger2021} found laboratory emotion recognition accuracy (63\%) drops substantially in real emergency calls (45.6\%). Bio-acoustic features provide gradient information about caller state but cannot substitute for semantic content.
 
 \subsection{The Integration Thesis}
 
 Our architecture integrates these complementary information sources based on the following thesis: \textbf{In emergency contexts, the correlation between ASR failure and genuine distress creates an opportunity to use recognition uncertainty as a routing signal rather than an error to be minimized.}
 
-\begin{figure}[ht]
+\begin{figure}[!htb]
 \centering
 \includegraphics[width=0.85\textwidth]{figures/trident_theoretical_model.pdf}
 \caption{The TRIDENT Integration Thesis: Stress-Induced Dialect Shift vs. ASR Performance. The model illustrates the system's theoretical foundation. Under acute stress (red arrow), speakers experience inhibitory control failure, shifting along the continuum from acrolectal (standard) to basilectal (creole) registers. As speech becomes more basilectal, ASR confidence (blue line) degrades below the usable threshold of 0.7. The ``Intervention Zone'' highlights TRIDENT's novel contribution: identifying calls where low transcription confidence coincides with high bio-acoustic distress, thereby converting a technical failure into a high-priority (Q1) routing signal.}

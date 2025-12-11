@@ -1,37 +1,9 @@
-\subsection{AI-Assisted Emergency Dispatch}
+\subsection{AI-Assisted Emergency Dispatch and Clinical Protocols}
 
-Emergency services worldwide are exploring AI-powered speech recognition and natural language processing to improve call handling efficiency and support triage accuracy. Importantly, these systems are designed to \emph{augment} human dispatchers applying established clinical protocols, not to replace professional judgment. Understanding the clinical frameworks that AI systems must support is essential context for evaluating their design.
+Emergency services worldwide are exploring AI to improve call handling, but these systems must support established clinical triage protocols rather than replace human judgment.
 
-\subsubsection{Clinical Triage Protocols: The Gold Standards}
+\textbf{Clinical Triage Protocols.} The Emergency Severity Index (ESI) is a five-level acuity scale (Level 1: immediate lifesaving intervention to Level 5: no resources needed) widely used in the United States and internationally \cite{esi_handbook}. Jamaica's Ministry of Health implemented ESI across all 19 public hospital emergency departments in 2016 \cite{french2020}. For mass casualty events such as hurricanes, the START (Simple Triage and Rapid Treatment) protocol provides rapid four-category sorting: BLACK (deceased/expectant), RED (immediate), YELLOW (delayed), and GREEN (walking wounded). The ESI handbook explicitly notes that ESI should not be used during mass casualty incidents \cite{esi_handbook}.
 
-\textbf{Emergency Severity Index (ESI).} Developed by the Agency for Healthcare Research and Quality, ESI is a five-level acuity scale widely used in the United States and internationally \cite{esi_handbook}. The protocol stratifies patients from Level 1 (immediate lifesaving intervention required) to Level 5 (no resources needed), based on acuity assessment and anticipated resource utilization. Jamaica's Ministry of Health implemented ESI across all 19 public hospital emergency departments in 2016 \cite{french2020}.
+\textbf{Current AI Systems.} Existing emergency AI systems (e.g., ECA \cite{attiah2025}, Corti \cite{blomberg2019}) achieve promising classification accuracy but rely on cloud-dependent, accent-agnostic ASR and process only transcribed text, ignoring paralinguistic signals. A scoping review of 106 AI studies in prehospital care identified underutilization of multimodal inputs and absence of infrastructure-independent systems as key gaps \cite{chee2023}.
 
-However, a 2020 evaluation found poor interrater reliability between Jamaican practitioners and ESI experts, with triage note quality, completeness of vital sign assessment, and high staff attrition identified as key challenges \cite{french2020}. These implementation difficulties motivate TRIDENT's focus on structured entity extraction to support dispatcher protocol application.
-
-\textbf{START Protocol.} For mass casualty events such as hurricanes that regularly affect the Caribbean, the START (Simple Triage and Rapid Treatment) protocol provides rapid four-category sorting: BLACK (deceased/expectant), RED (immediate), YELLOW (delayed), and GREEN (walking wounded). The ESI handbook explicitly notes that ESI should \emph{not} be used during mass casualty incidents, where START or similar rapid triage systems are appropriate \cite{esi_handbook}.
-
-Any AI system for emergency dispatch must therefore be evaluated not on whether it makes ``better'' triage decisions than these validated protocols, but on whether it improves the \emph{inputs} available to human professionals applying them. Our evaluation of existing systems and the design of TRIDENT is guided by this framing: AI as protocol enabler rather than protocol replacement.
-
-\subsubsection{Current AI Systems: Capabilities and Limitations}
-
-The Emergency Calls Assistant (ECA) framework represents current academic state-of-the-art, achieving 92.7\% accuracy in emergency classification using SVM with linear kernel on textual features \cite{attiah2025}. The system operates in two phases---speech-to-text conversion followed by NLP classification---and compares favorably against commercial platforms including RapidSOS, Corti, and AlertGO. Like TRIDENT, ECA is designed to support dispatcher decision-making by providing structured classification of caller reports.
-
-However, critical examination reveals systematic gaps. ECA relies on Google Cloud Speech-to-Text API with no offline capability or accent adaptation, assumptions that fail for Caribbean deployment contexts. The system processes only transcribed text, ignoring paralinguistic stress markers that may indicate caller distress even when words are unclear. Furthermore, due to privacy restrictions on real emergency recordings, ECA was trained on synthetic datasets, raising questions about generalization to actual crisis communications where callers exhibit genuine distress.
-
-Clinical validation studies demonstrate AI's potential for dispatcher support while highlighting implementation challenges. Blomberg et al. \cite{blomberg2019, blomberg2021} evaluated the Corti AI system for cardiac arrest detection, finding that the ML system achieved 84.1\% sensitivity compared to dispatchers' 72.5\%, with faster time-to-recognition (44 seconds versus 54 seconds median). Critically, Corti operates as a \emph{decision-support tool}: it alerts dispatchers to potential cardiac arrests, but the dispatcher makes the final determination and applies appropriate protocols. However, a subsequent randomized clinical trial found no significant improvement in dispatcher recognition when supported by ML alerts, suggesting that human-AI teaming requires careful interface design beyond raw model performance.
-
-A scoping review of 106 AI studies in prehospital emergency care identified underutilization of multimodal inputs as a key gap \cite{chee2023}. No reviewed system integrated audio-based stress detection with text classification. The review also noted the absence of systems designed for infrastructure-independent operation, a critical limitation for disaster response scenarios where communication networks are degraded precisely when emergency services are most needed.
-
-\subsubsection{Gaps Relevant to Caribbean Deployment}
-
-Three specific gaps emerge from this literature that motivate TRIDENT's design:
-
-\begin{enumerate}
-    \item \textbf{Accent and dialect adaptation:} No existing system addresses the systematic ASR performance degradation on Caribbean English varieties, nor the stress-induced register shifting that characterizes bidialectal speech communities under crisis conditions.
-    
-    \item \textbf{Multimodal distress detection:} While vocal stress research is extensive (Section~\ref{sec:vocal_stress}), no deployed emergency AI system incorporates bio-acoustic analysis as a parallel signal to text-based classification---missing critical information when ASR fails.
-    
-    \item \textbf{Infrastructure resilience:} Cloud-dependent architectures assume reliable internet connectivity, an assumption that fails catastrophically during the hurricanes, earthquakes, and floods that drive emergency call surges in Caribbean contexts.
-\end{enumerate}
-
-TRIDENT addresses these gaps while maintaining the fundamental principle that AI systems should \emph{empower} dispatchers to apply established protocols (ESI, START) more effectively, not replace clinical judgment with algorithmic decision-making.
+\textbf{Gaps for Caribbean Deployment.} Three limitations motivate TRIDENT's design: (1) no accent adaptation for Caribbean varieties or stress-induced register shifting, (2) no integration of vocal stress detection with text classification, and (3) cloud dependency that fails during disasters when emergency services are most needed. TRIDENT addresses these gaps while maintaining the principle that AI should empower dispatchers to apply ESI/START protocols more effectively, not replace clinical judgment.

@@ -2,7 +2,7 @@
 
 TRIDENT implements a three-layer dispatcher-support architecture where each component provides independent value while contributing to intelligent queue prioritization. The system does not make clinical triage decisions---those remain with trained dispatchers applying ESI or START protocols---but ensures dispatchers receive the highest-priority calls first along with structured information to support protocol application. Figure~\ref{fig:system_diagram} illustrates the system flow.
 
-\begin{figure}[ht]
+\begin{figure}[!htb]
 \centering
 \includegraphics[width=0.9\textwidth]{figures/project_filter_architecture.pdf}
 \caption{The TRIDENT architecture. The system processes raw audio through two parallel streams: (Left) A Caribbean-adapted ASR and NLP pipeline for entity extraction and content analysis, and (Right) a bio-acoustic analysis layer for detecting physiological distress markers. The \textbf{Queue Prioritization Engine} integrates three independent signals---transcription confidence, extracted clinical indicators, and vocal distress---to determine queue position for dispatcher attention. This ensures that (1) calls with low transcription confidence but high vocal distress receive immediate human review, and (2) semantically urgent calls from calm reporters are not delayed due to absent vocal stress markers. The dispatcher then applies established triage protocols (ESI for routine operations, START for mass casualty events) using both TRIDENT's extracted entities and direct audio review.}

@@ -1,6 +1,6 @@
 \subsection{Layer 1: Caribbean-Tuned ASR}
 
-The ASR layer employs OpenAI's Whisper Large model (769M parameters) fine-tuned with Low-Rank Adaptation (LoRA) on Caribbean broadcast speech. Competition experience suggests that Whisper Large is more accurate than Whisper Medium for Caribbean speech, even though the latter is the default model used by OpenAI. This notwithstanding, for TRIDENT, we selected Whisper Medium over Large based on Madden et al.'s \cite{madden2025} scaling law, which demonstrates diminishing returns from model size compared to domain-specific data for Caribbean varieties. Furthermore, Whisper Medium is more efficient to run on a Raspberry Pi 5, which is the edge device we are using for TRIDENT.
+The ASR layer employs OpenAI's Whisper Medium fine-tuned with Low-Rank Adaptation (LoRA) on Caribbean broadcast speech. We selected Whisper Medium over Large based on Madden et al.'s \cite{madden2025} scaling law, which demonstrates that domain-specific data yields greater gains than model size for Caribbean varieties. Whisper Medium is also more efficient for Raspberry Pi 5 edge deployment.
 
 \textbf{Fine-tuning Configuration:}
 \begin{itemize}
@@ -10,14 +10,10 @@ The ASR layer employs OpenAI's Whisper Large model (769M parameters) fine-tuned 
     \item Trainable parameters: $\sim$0.5\% of total model
 \end{itemize}
 
-\textbf{Confidence Scoring:} The system computes \textbf{utterance-level} confidence as the mean log-probability across all decoded tokens, normalized to a 0-1 scale. Specifically:
+\textbf{Confidence Scoring:} The system computes utterance-level confidence as the mean log-probability across all decoded tokens, normalized to 0-1:
 
 \begin{equation}
 \text{confidence} = \exp\left(\frac{1}{N}\sum_{i=1}^{N} \log P(t_i | t_1 \ldots t_{i-1}, \text{audio})\right)
 \end{equation}
 
-We use utterance-level rather than token-level confidence because emergency triage requires a holistic assessment of transcription reliability. Token-level confidence would require additional aggregation logic and may miss systematic degradation patterns (e.g., consistently low confidence across an entire basilectal utterance).
-
-\textbf{Confidence Threshold:} We set the ``low confidence'' threshold at 0.7 based on initial calibration experiments, though sensitivity analysis is needed to optimize this value (see Limitations).
-
-The configuration above reflects design specifications informed by the Caribbean Voices AI Hackathon, which provided access to the BBC Caribbean corpus. Competition data rights are retained by the organizers; empirical validation therefore remains future work. The architecture accommodates any Caribbean-tuned Whisper model meeting these specifications.
+We use utterance-level rather than token-level confidence because emergency triage requires holistic assessment of transcription reliability. The low confidence threshold is set at 0.7 based on initial calibration.

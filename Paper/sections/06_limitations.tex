@@ -2,106 +2,28 @@
 
 \subsection{Current Limitations}
 
-\textbf{Validation gap (most critical).} This paper presents an architectural framework with theoretical grounding but limited empirical validation on real emergency calls. Performance claims for each layer are based on component evaluations and related literature rather than end-to-end system testing. The three-dimensional queue prioritization matrix (ASR confidence $\times$ distress $\times$ content indicators) is theoretically motivated but has not been validated against expert dispatcher judgments.
+\textbf{Validation gap (most critical).} This paper presents an architectural framework with theoretical grounding but limited empirical validation on real emergency calls. Performance claims are based on component evaluations and related literature rather than end-to-end system testing. The three-dimensional queue prioritization matrix has not been validated against expert dispatcher judgments.
 
-\textbf{Protocol integration.} While this paper frames TRIDENT as a dispatcher-support system for ESI and START protocol application, the entity extraction schema and queue prioritization logic were developed independently of clinical stakeholder input. Full integration with Ministry of Health workflows would require:
-\begin{itemize}
-    \item Validation that extracted entities map correctly to ESI decision points A--D
-    \item Confirmation that queue priority levels align with operational dispatcher workflows
-    \item Assessment of whether bio-acoustic distress indicators provide actionable information beyond what dispatchers already perceive
-    \item Training material development for dispatcher familiarization with TRIDENT outputs
-\end{itemize}
+\textbf{Protocol integration.} While TRIDENT is framed as supporting ESI and START protocols, the entity extraction schema and queue prioritization logic were developed independently of clinical stakeholder input. Full Ministry of Health integration requires validation that extracted entities map correctly to ESI decision points and that queue priorities align with operational workflows.
 
-\noindent This clinical integration work represents essential future collaboration with Caribbean emergency services professionals. The current paper establishes technical feasibility; operational validation requires partnership with the health ministries whose protocols TRIDENT aims to support.
+\textbf{Training data constraints.} Caribbean emergency speech corpora do not exist. ASR fine-tuning was performed on broadcast speech, which differs from emergency call acoustics in noise profiles, emotional content, and register distribution.
 
-\textbf{Training data constraints.} Caribbean emergency speech corpora do not exist. ASR fine-tuning was performed on broadcast speech, which differs significantly from emergency call acoustics in noise profiles, emotional content, and register distribution. The gap between training domain (broadcast) and deployment domain (emergency calls) may introduce systematic errors not captured in current evaluation.
+\textbf{Sex differences in F0 baseline.} Fundamental frequency is sexually dimorphic: male voices typically range 85--175 Hz while female voices range 165--270 Hz \cite{titze1989, traunmuller1995}. We mitigate this by prioritizing sex-normalized features (F0 coefficient of variation, jitter) over absolute F0 elevation in distress score calculation. Research confirms that stress manifests with ``striking parallels in men and women'' \cite{pisanski2018}---both sexes show increased pitch mean and variation under acute stress. However, residual bias risks remain: relaxed female speakers near upper baseline may contribute to elevated distress scores, while stressed male speakers with naturally low F0 may not contribute sufficiently. A validation study with sex-stratified analysis on Caribbean emergency calls is essential to calibrate population-appropriate thresholds and confirm normalized measures maintain sensitivity across demographics.
 
-\textbf{Bio-acoustic threshold calibration.} Distress detection thresholds are derived from literature on non-Caribbean, predominantly Western populations. Baseline vocal characteristics may vary across Caribbean demographics, requiring population-specific calibration.
+\textbf{Content indicator classification.} The Content Indicator Score depends on LLM classification quality. Caribbean creole expressions not well-represented in training data may be misclassified. Empirical evaluation of classification accuracy on Caribbean transcripts is needed, particularly for false negatives that could delay critical calls.
 
-\subsection{Sex Differences in F0 Baseline}
-\label{sec:sex_limitations}
+\textbf{Single-speaker assumption.} Multi-party calls are not handled. Speaker changes mid-call could confuse bio-acoustic analysis and entity extraction.
 
-Fundamental frequency is sexually dimorphic: male voices typically range 85--175 Hz while female voices range 165--270 Hz \cite{titze1989, traunmuller1995}. Setting a single absolute F0 threshold for distress detection risks differential sensitivity across speaker sex.
-
-\textbf{Architectural mitigation strategies:}
-\begin{itemize}
-    \item Prioritizing sex-normalized features: F0 coefficient of variation ($CV = \sigma_{F0} / \mu_{F0}$) captures pitch instability independent of baseline; jitter measures cycle-to-cycle perturbations that are ``relatively independent from prosodic patterns'' \cite{vanpuyvelde2018}
-    \item Weighting normalized features (CV: 0.35, jitter: 0.15) more heavily than absolute F0 elevation (0.30) in the distress score calculation
-\end{itemize}
-
-Research confirms that stress manifests with ``striking parallels in men and women'' \cite{pisanski2018}---both sexes show increased pitch mean, minimum, and variation under acute stress. The challenge is not that stress manifests differently, but that baseline values differ.
-
-\textbf{Residual bias risks:}
-\begin{itemize}
-    \item \textbf{False positive risk:} A relaxed female speaker near the upper baseline range may contribute to elevated distress scores
-    \item \textbf{False negative risk:} A stressed male speaker with naturally low F0 may not contribute sufficiently to the pitch component
-\end{itemize}
-
-Automatic sex identification from voice is itself an imperfect classifier, particularly for voices near the overlap region of male and female F0 distributions. Rather than introduce a potentially error-prone sex classification step, we employ the sex-normalized feature strategy above. A validation study with sex-stratified analysis on Caribbean emergency calls is essential to: (1) calibrate population-appropriate thresholds, (2) confirm that normalized measures maintain sensitivity across speaker demographics, and (3) determine whether Caribbean populations exhibit different baseline distributions requiring adjustment.
-
-\textbf{Content indicator classification.} The Content Indicator Score depends on LLM classification quality. While leveraging Llama 3's semantic understanding avoids brittle keyword matching, it introduces new failure modes:
-\begin{itemize}
-    \item Classification errors propagate deterministically to queue priority
-    \item Caribbean creole expressions not well-represented in LLM training data may be misclassified
-    \item The model may fail to recognize culturally-specific threat indicators or landmarks
-\end{itemize}
-
-\noindent Empirical evaluation of classification accuracy on Caribbean emergency transcripts is needed, with particular attention to false negatives (urgent content classified as non-urgent) that could delay dispatcher attention to critical calls.
-
-\textbf{Single-speaker assumption.} The current architecture assumes single-speaker input. Multi-party calls, common in emergencies (``put your mother on the phone''), are not handled. Speaker changes mid-call could confuse bio-acoustic analysis and entity extraction continuity.
-
-\textbf{Threshold sensitivity.} Multiple thresholds govern system behavior: ASR confidence (0.7), distress score (0.5), and content indicators (50). These values were selected based on literature and initial calibration but have not been rigorously optimized. Sensitivity analysis examining system performance across threshold combinations is needed to understand precision-recall tradeoffs for each queue priority level.
+\textbf{Threshold sensitivity.} Multiple thresholds (ASR confidence 0.7, distress 0.5, content indicators 50) were selected based on literature but have not been rigorously optimized. Sensitivity analysis examining precision-recall tradeoffs is needed.
 
 \subsection{Future Work}
 
-\textbf{Clinical stakeholder collaboration.} The most important next step is partnership with Caribbean emergency services to validate TRIDENT's utility in real dispatch workflows. This includes:
-\begin{itemize}
-    \item Observation studies of current ESI/START application challenges
-    \item Dispatcher feedback on extracted entity usefulness and queue priority alignment
-    \item Iterative refinement of the entity extraction schema based on clinical input
-    \item Development of dispatcher training materials for TRIDENT integration
-\end{itemize}
+\textbf{Clinical stakeholder collaboration.} Partnership with Caribbean emergency services to validate TRIDENT's utility in real dispatch workflows, including observation studies of current ESI/START challenges, dispatcher feedback on extracted entity usefulness, and iterative schema refinement based on clinical input.
 
-\textbf{Caribbean Emergency Speech Corpus.} A critical enabler for future progress is a dedicated corpus combining Caribbean-accented speech with emergency domain content and stress annotations. Multiple approaches could address this data scarcity, each with distinct tradeoffs. Partnerships with Caribbean emergency services to record and annotate real emergency calls would provide the most ecologically valid data but face substantial privacy, consent, and ethical barriers. Acted emergency scenarios avoid these concerns but may not capture authentic stress-induced vocal characteristics or naturalistic basilectal shift patterns.
+\textbf{Caribbean Emergency Speech Corpus.} A dedicated corpus combining Caribbean-accented speech with emergency domain content and stress annotations is critical. We are exploring \textit{VoicefallJA}, a gamified speech elicitation platform designed to collect stressed Caribbean speech through game-induced cognitive load rather than acted performance. The Progressive Web App targets 100--300 speakers via church network distribution, with Q2--Q3 2026 data collection. However, game-induced stress differs fundamentally from genuine emergency distress; this approach should be viewed as a stepping stone toward real-call annotation under appropriate ethical frameworks, not a replacement.
 
-A gamified speech elicitation platform represents one potential middle ground. We are exploring \textit{VoicefallJA}, a prototype designed to collect stressed Caribbean speech through game-induced cognitive load rather than acted performance.
+\textbf{Empirical validation.} End-to-end evaluation with emergency dispatch professionals assessing whether TRIDENT's queue prioritization aligns with expert judgment, including sex-stratified analysis of bio-acoustic accuracy and entity extraction accuracy on Caribbean creole transcripts.
 
-\textbf{Game Design.} VoicefallJA presents falling-word targets that players must speak aloud before words exit the screen. Difficulty progression (increased speed, shorter response windows) induces naturalistic cognitive load, eliciting stress responses without deception. Phrase prompts span the creole continuum---from acrolectal (``The hospital is on Nelson Street'') through mesolectal (``Di hospital deh pon Nelson Street'') to basilectal (``Di haspital deh dung a Nelson Street side'')---enabling register-annotated collection.
+\textbf{Ablation studies.} Quantifying the marginal contribution of each architectural component (bio-acoustic analysis, content indicators, Caribbean-tuned ASR).
 
-\textbf{Distribution.} The Progressive Web App is designed for WhatsApp-based distribution through institutional partnerships, specifically Methodist Church in the Caribbean and the Americas (MCCA) congregational networks spanning Jamaica and Montserrat. Target: 100--300 speakers, 5,000+ utterances.
-
-\textbf{Ethical Framework.} Our consent model includes: (1) persistent recording indicators, (2) ``panic button'' mid-session revocation, (3) play-only mode without audio recording, and (4) community benefit mechanisms ensuring Caribbean communities receive value from their linguistic contributions.
-
-\textbf{Annotation Schema.} Each utterance is annotated with: register label (ACR/MES/BAS), game-induced stress level (1--5), prosodic features (F0 mean/SD, jitter, shimmer, speech rate), and optional demographics.
-
-\textbf{Timeline.} Q1 2026: beta launch; Q2--Q3 2026: data collection; Q3 2026: dataset release targeting 20+ hours of register-annotated speech.
-
-\textbf{Limitations of the gamification approach.} While VoicefallJA addresses some data collection barriers, game-induced stress differs fundamentally from genuine emergency distress. The platform cannot replicate the life-threatening context, physiological arousal patterns, or communicative urgency of actual emergency calls. Additionally, self-selected participants comfortable with technology may not represent the full demographic diversity of emergency callers. This approach should be viewed as a stepping stone toward more ecologically valid data collection methods, not a replacement for partnerships with emergency services that could enable real-call annotation under appropriate ethical frameworks.
-
-\textbf{Empirical validation.} End-to-end evaluation with emergency dispatch professionals assessing whether TRIDENT's queue prioritization aligns with expert judgment. This should include:
-\begin{itemize}
-    \item Comparison of three-dimensional prioritization against two-dimensional (confidence $\times$ distress) baseline
-    \item Sex-stratified analysis of bio-acoustic distress detection accuracy
-    \item Assessment of entity extraction accuracy on Caribbean creole transcripts
-    \item Measurement of dispatcher efficiency gains (if any) when using TRIDENT outputs
-\end{itemize}
-
-\textbf{Ablation studies.} Rigorous testing to quantify the contribution of each architectural component:
-\begin{itemize}
-    \item Does bio-acoustic analysis improve queue prioritization over ASR-only approaches?
-    \item Do content indicators catch urgent calls missed by distress detection alone?
-    \item What is the marginal value of Caribbean-tuned ASR versus off-the-shelf Whisper?
-\end{itemize}
-
-\textbf{Sex-adaptive distress detection.} Implementing and validating approaches to further reduce sex bias:
-\begin{itemize}
-    \item Within-call F0 \textit{change} detection rather than absolute thresholds
-    \item Automatic speaker characteristic estimation for threshold adaptation
-    \item Ensemble approaches combining multiple normalization strategies
-\end{itemize}
-
-\textbf{Dialect density estimation.} Augmenting the system with automatic estimation of creole feature density, providing dispatchers with guidance on expected communication challenges and informing decisions about when to rely on extracted text versus direct audio review.
-
-\textbf{Multilingual extension.} Caribbean emergency services handle calls in English, Spanish, French, Dutch, and various creoles. Extending the architecture to multilingual operation would significantly expand impact, though each language introduces its own ASR adaptation and entity extraction challenges.
-
-\textbf{Edge deployment optimization.} While the architecture is designed for offline operation, current latency profiles (45--60 seconds per call) limit real-time applicability. Optimization for edge hardware (Raspberry Pi, embedded GPU) would enable faster queue prioritization at emergency coordination centers operating with degraded connectivity.
+\textbf{Sex-adaptive distress detection.} Implementing within-call F0 change detection rather than absolute thresholds, and ensemble approaches combining multiple normalization strategies.

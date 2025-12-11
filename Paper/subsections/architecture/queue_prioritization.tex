@@ -78,7 +78,7 @@ Q5-ROUTINE/REVIEW & Process normally using extracted metadata & Full ESI protoco
 
 \subsubsection{Dispatcher Interface}
 
-Figure~\ref{fig:ui_low_risk} and Figure~\ref{fig:ui_high_risk} illustrate the dispatcher interface for contrasting scenarios. The interface presents:
+Figure~\ref{fig:ui_high_risk} illustrates the dispatcher interface for a high-priority scenario. The interface presents:
 
 \begin{itemize}
     \item Queue priority level with visual urgency coding
@@ -88,16 +88,9 @@ Figure~\ref{fig:ui_low_risk} and Figure~\ref{fig:ui_high_risk} illustrate the di
     \item One-click access to call audio for direct assessment
 \end{itemize}
 
-\begin{figure}[ht]
+\begin{figure}[!htb]
 \centering
-\includegraphics[width=0.85\textwidth]{figures/Screenshot 2025-11-30 at 8.41.20.png}
-\caption{Dispatcher interface for a routine scenario (Q5-ROUTINE). High transcription confidence enables reliable entity extraction. The dispatcher can apply ESI protocol using the structured location, hazard type, and resource need data. Audio review is available but not flagged as necessary.}
-\label{fig:ui_low_risk}
-\end{figure}
-
-\begin{figure}[ht]
-\centering
-\includegraphics[width=0.85\textwidth]{figures/Screenshot 2025-11-30 at 8.42.43.png}
+\includegraphics[width=0.85\textwidth]{figures/TRIDENT_high_priority_ui.png}
 \caption{Dispatcher interface for a high-priority scenario (Q1-IMMEDIATE). Elevated distress markers combined with low transcription confidence trigger immediate queue placement. The interface prominently recommends audio review and displays partial entity extraction with uncertainty markers. The dispatcher will listen directly and apply ESI or START protocol based on their clinical assessment.}
 \label{fig:ui_high_risk}
 \end{figure}
