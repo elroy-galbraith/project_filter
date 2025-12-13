@@ -69,25 +69,33 @@ class AudioBuffer:
         Add audio chunk to buffer.
 
         Args:
-            audio_data: Raw audio bytes (WebM, WAV, or other format)
+            audio_data: Raw PCM audio bytes (Float32 format from Web Audio API)
         """
+        if len(audio_data) == 0:
+            logger.warning("Received empty audio chunk, skipping")
+            return
+
         try:
-            # Load audio from bytes using librosa
-            audio, sr = librosa.load(io.BytesIO(audio_data), sr=self.sample_rate, mono=True)
+            # Convert bytes to numpy array (Float32 PCM)
+            # Web Audio API sends Float32 samples in range [-1.0, 1.0]
+            audio = np.frombuffer(audio_data, dtype=np.float32)
 
-            # Append to buffer
-            self.buffer = np.concatenate([self.buffer, audio])
-            self.total_duration = len(self.buffer) / self.sample_rate
+            if len(audio) > 0:
+                # Append to buffer
+                self.buffer = np.concatenate([self.buffer, audio])
+                self.total_duration = len(self.buffer) / self.sample_rate
 
-            # Update voice activity time
-            rms = np.sqrt(np.mean(audio**2))
-            if rms > self.energy_threshold:
-                self.last_voice_time = self.total_duration
+                # Update voice activity
+                rms = np.sqrt(np.mean(audio**2))
+                if rms > self.energy_threshold:
+                    self.last_voice_time = self.total_duration
 
-            logger.debug(f"Buffer updated: {self.total_duration:.2f}s total, RMS={rms:.4f}")
+                logger.debug(f"Buffer updated: {self.total_duration:.1f}s total, RMS={rms:.4f}")
 
         except Exception as e:
             logger.error(f"Error adding audio chunk: {e}")
+            import traceback
+            logger.error(traceback.format_exc())
 
     def should_process(self) -> bool:
         """
@@ -153,6 +161,7 @@ class LiveCallSession:
         self.call_id = call_id
         self.websocket = websocket
         self.start_time = datetime.now()
+        self.is_active = True  # Track if session is still active
 
         # Audio buffer
         self.audio_buffer = AudioBuffer(sample_rate=16000, chunk_duration=1.0)
@@ -344,9 +353,12 @@ class LiveCallSession:
             data: Update data to send
         """
         try:
-            await self.websocket.send_json(data)
+            # Check if WebSocket is still open
+            if self.websocket.client_state.name == 'CONNECTED':
+                await self.websocket.send_json(data)
         except Exception as e:
-            logger.error(f"Error sending update: {e}")
+            # Silently ignore errors if WebSocket is closed
+            logger.debug(f"Could not send update (WebSocket may be closed): {e}")
 
     async def send_error(self, message: str) -> None:
         """
@@ -369,9 +381,19 @@ class LiveCallSession:
         """
         logger.info(f"Finalizing call: {self.call_id}")
 
-        # Process any remaining audio in buffer
-        if self.audio_buffer.get_duration() > 0:
-            await self.process_buffer()
+        # Mark session as inactive
+        self.is_active = False
+
+        # Process any remaining audio in buffer (if significant and WebSocket still open)
+        if self.audio_buffer.get_duration() > 2.0:  # Only process if >2s remaining
+            # Check if WebSocket is still connected before processing
+            try:
+                if self.websocket.client_state.name == 'CONNECTED':
+                    await self.process_buffer()
+                else:
+                    logger.info("WebSocket closed, skipping final buffer processing")
+            except Exception as e:
+                logger.debug(f"Could not process final buffer: {e}")
 
         # Calculate call duration
         call_duration = (datetime.now() - self.start_time).total_seconds()
@@ -436,10 +458,13 @@ async def handle_live_call(websocket: WebSocket, call_id: str) -> None:
         # Finalize call
         final_analysis = await session.finalize()
 
-        # Send final analysis
-        await session.send_update({
-            "type": "call_ended",
-            "analysis": final_analysis
-        })
+        # Send final analysis (only if websocket still open)
+        try:
+            await session.send_update({
+                "type": "call_ended",
+                "analysis": final_analysis
+            })
+        except Exception as e:
+            logger.debug(f"Could not send final update (connection already closed): {e}")
 
         logger.info(f"Call session ended: {call_id}, Duration: {final_analysis['duration']:.2f}s")

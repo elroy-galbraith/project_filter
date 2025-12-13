@@ -92,9 +92,9 @@ const LiveCall = () => {
     isRecording,
     error: recordingError
   } = useAudioRecorder({
-    onAudioChunk: (audioBlob) => {
-      // Send audio chunk to backend via WebSocket
-      sendAudio(audioBlob);
+    onAudioChunk: (audioBuffer) => {
+      // Send PCM audio chunk to backend via WebSocket (ArrayBuffer with Float32 samples)
+      sendAudio(audioBuffer);
     },
     chunkInterval: 1000 // Send 1-second chunks
   });

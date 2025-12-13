@@ -63,6 +63,30 @@ TRIDENT now supports **real-time audio processing** for live emergency calls. Th
 
 ## Quick Start
 
+### 0. Check Dependencies (First Time)
+
+```bash
+cd backend
+source venv/bin/activate
+python check_dependencies.py
+```
+
+This verifies:
+- Python packages installed
+- **ffmpeg installed** (required for WebM audio decoding)
+- Whisper model ready
+- GPU acceleration available
+- Audio processing working
+
+**Critical:** If ffmpeg is missing, install it:
+```bash
+# macOS
+brew install ffmpeg
+
+# Ubuntu/Debian
+sudo apt-get install ffmpeg
+```
+
 ### 1. Start the Backend
 
 ```bash
