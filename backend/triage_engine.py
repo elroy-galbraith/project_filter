@@ -1,16 +1,16 @@
 """
 TRIDENT Triage Decision Engine
 
-Implements the 3C framework (Confidence × Content × Concern) for emergency call
+Implements the full 3C framework (Confidence × Content × Concern) for emergency call
 prioritization, as specified in PRD Section 5.
 
-For this PoC, we implement a simplified 2D matrix (Confidence × Concern) since
-the NLP Content layer is not yet implemented.
+This version includes the NLP Content layer for complete 3D decision matrix.
 
 Priority Queues (from PRD Table 3):
 - Q1-IMMEDIATE: Critical, needs dispatcher attention now
 - Q2-ELEVATED: High priority, review soon
 - Q3-MONITOR: Elevated concern but clear communication
+- Q4-STANDARD: Medium priority, process normally
 - Q5-REVIEW: Low confidence, needs verification
 - Q5-ROUTINE: Standard logging, no urgency
 
@@ -30,45 +30,37 @@ class TriageEngine:
     """
     Implements emergency call triage decision logic.
 
-    Uses ASR confidence and bio-acoustic distress to route calls to
-    appropriate priority queues.
+    Uses ASR confidence, NLP content indicators, and bio-acoustic distress
+    to route calls to appropriate priority queues via 3D decision matrix.
     """
 
     # Thresholds from PRD
     CONFIDENCE_THRESHOLD = 0.7  # Below this = low confidence
-    DISTRESS_THRESHOLD = 0.5    # Above this = high distress
+    DISTRESS_THRESHOLD = 0.5    # Above this = high distress (Concern)
+    CONTENT_THRESHOLD = 0.5     # Above this = high content urgency
 
     def __init__(self):
         """Initialize triage engine with thresholds."""
         self.confidence_threshold = self.CONFIDENCE_THRESHOLD
         self.distress_threshold = self.DISTRESS_THRESHOLD
+        self.content_threshold = self.CONTENT_THRESHOLD
 
     def prioritize_call(
         self,
         confidence: float,
         distress_score: float,
-        content_score: float = 0.0  # Reserved for future NLP layer
+        content_score: float = 0.0
     ) -> Dict[str, any]:
         """
-        Determine call priority queue based on confidence and distress.
+        Determine call priority queue using 3D decision matrix.
 
-        Simplified 2D Decision Matrix (Confidence × Concern):
-
-        +------------------+------------------+------------------+
-        |                  |  Low Distress    |  High Distress   |
-        |                  |    (≤0.5)        |    (>0.5)        |
-        +------------------+------------------+------------------+
-        | High Confidence  |  Q5-ROUTINE      |  Q3-MONITOR      |
-        |   (≥0.7)         |  Auto-log        |  Elevated watch  |
-        +------------------+------------------+------------------+
-        | Low Confidence   |  Q5-REVIEW       |  Q1-IMMEDIATE    |
-        |   (<0.7)         |  Verify          |  PRIORITY #1     |
-        +------------------+------------------+------------------+
+        Full 3D Decision Matrix (Confidence × Content × Concern):
+        From PRD Table 3 - All 8 combinations of the three binary factors.
 
         Args:
             confidence: ASR confidence score (0-1)
-            distress_score: Bio-acoustic distress score (0-1)
-            content_score: NLP content indicator (0-1) - not yet implemented
+            distress_score: Bio-acoustic distress score (0-1) [Concern]
+            content_score: NLP content indicator (0-1)
 
         Returns:
             Dictionary containing:
@@ -77,59 +69,118 @@ class TriageEngine:
                 - flag_audio_review: Whether to flag for human audio review
                 - reasoning: Explanation of routing decision
         """
+        # Classify each dimension as High/Low
         high_confidence = confidence >= self.confidence_threshold
-        high_distress = distress_score > self.distress_threshold
+        high_content = content_score > self.content_threshold
+        high_concern = distress_score > self.distress_threshold
 
-        # Q1-IMMEDIATE: Low confidence + high distress
-        # This is the HERO scenario - Caribbean creole under stress
-        if not high_confidence and high_distress:
+        # 3D Decision Matrix - PRD Table 3
+        # Format: (Confidence, Content, Concern) → Queue
+
+        # CASE 1: Low Confidence + Low Content + High Concern
+        # → Q1-IMMEDIATE (HERO SCENARIO)
+        # Caribbean creole under stress, unclear content but high distress
+        if not high_confidence and not high_content and high_concern:
             return {
                 "queue": "Q1-IMMEDIATE",
                 "priority_level": 1,
                 "flag_audio_review": True,
-                "reasoning": "Low ASR confidence + high bio-acoustic distress indicates "
-                            "potential life-threatening situation with communication barriers. "
-                            "IMMEDIATE dispatcher review required."
+                "reasoning": "HERO SCENARIO: Low confidence + high distress with unclear content. "
+                            "Likely Caribbean creole speaker under extreme stress. "
+                            "IMMEDIATE audio review required - life threat probable."
             }
 
-        # Q3-MONITOR: High confidence + high distress
-        # Clear communication but elevated distress - monitor situation
-        elif high_confidence and high_distress:
+        # CASE 2: Low Confidence + High Content + Low Concern
+        # → Q2-ELEVATED
+        # Poor transcription but serious incident reported calmly
+        elif not high_confidence and high_content and not high_concern:
+            return {
+                "queue": "Q2-ELEVATED",
+                "priority_level": 2,
+                "flag_audio_review": True,
+                "reasoning": "Serious incident reported but transcription unclear. "
+                            "Calm delivery suggests controlled situation. "
+                            "Review audio to verify content urgency."
+            }
+
+        # CASE 3: Low Confidence + High Content + High Concern
+        # → Q1-IMMEDIATE
+        # Poor transcription + serious incident + high distress
+        elif not high_confidence and high_content and high_concern:
+            return {
+                "queue": "Q1-IMMEDIATE",
+                "priority_level": 1,
+                "flag_audio_review": True,
+                "reasoning": "Critical situation: High content urgency + high distress with unclear transcription. "
+                            "Multiple emergency indicators present. IMMEDIATE response required."
+            }
+
+        # CASE 4: High Confidence + Low Content + High Concern
+        # → Q3-MONITOR
+        # Clear speech, no semantic urgency, but elevated stress
+        elif high_confidence and not high_content and high_concern:
             return {
                 "queue": "Q3-MONITOR",
                 "priority_level": 3,
                 "flag_audio_review": False,
-                "reasoning": "Clear transcription with elevated bio-acoustic distress. "
-                            "Situation requires monitoring but communication is functional."
+                "reasoning": "Clear transcription with elevated distress but low content urgency. "
+                            "May be emotional caller reporting non-critical incident. Monitor situation."
             }
 
-        # Q5-REVIEW: Low confidence + low distress
-        # Unclear communication but no urgency - verify later
-        elif not high_confidence and not high_distress:
+        # CASE 5: High Confidence + High Content + Low Concern
+        # → Q2-ELEVATED
+        # Professional reporting serious incident calmly
+        elif high_confidence and high_content and not high_concern:
+            return {
+                "queue": "Q2-ELEVATED",
+                "priority_level": 2,
+                "flag_audio_review": False,
+                "reasoning": "Serious incident reported clearly and calmly. "
+                            "Professional or controlled caller. Elevated priority for content urgency."
+            }
+
+        # CASE 6: High Confidence + High Content + High Concern
+        # → Q1-IMMEDIATE
+        # Clear report of critical incident with distress
+        elif high_confidence and high_content and high_concern:
+            return {
+                "queue": "Q1-IMMEDIATE",
+                "priority_level": 1,
+                "flag_audio_review": False,
+                "reasoning": "Maximum urgency: Clear critical incident with high distress. "
+                            "All three indicators elevated. IMMEDIATE dispatch required."
+            }
+
+        # CASE 7: Low Confidence + Low Content + Low Concern
+        # → Q5-REVIEW
+        # Unclear transcription, no urgency indicators
+        elif not high_confidence and not high_content and not high_concern:
             return {
                 "queue": "Q5-REVIEW",
                 "priority_level": 5,
                 "flag_audio_review": True,
-                "reasoning": "Low ASR confidence requires verification. "
-                            "No immediate distress indicators. Review audio when available."
+                "reasoning": "Low confidence transcription with no urgency indicators. "
+                            "Review audio when available to verify content."
             }
 
-        # Q5-ROUTINE: High confidence + low distress
-        # Standard infrastructure report - auto-log
-        else:
+        # CASE 8: High Confidence + Low Content + Low Concern
+        # → Q5-ROUTINE
+        # Standard infrastructure report, auto-log
+        else:  # high_confidence and not high_content and not high_concern
             return {
                 "queue": "Q5-ROUTINE",
                 "priority_level": 5,
                 "flag_audio_review": False,
-                "reasoning": "Clear communication, calm delivery. "
-                            "Standard infrastructure report for logging."
+                "reasoning": "Clear communication with low urgency content and calm delivery. "
+                            "Standard infrastructure report for routine logging."
             }
 
     def generate_dispatcher_guidance(
         self,
         confidence: float,
         distress_score: float,
-        transcript: str
+        transcript: str,
+        content_score: float = 0.0
     ) -> Dict[str, any]:
         """
         Generate comprehensive dispatcher guidance.
@@ -138,43 +189,56 @@ class TriageEngine:
             confidence: ASR confidence score
             distress_score: Bio-acoustic distress score
             transcript: Transcribed text
+            content_score: NLP content indicator score
 
         Returns:
             Dictionary with triage decision and dispatcher instructions
         """
-        triage = self.prioritize_call(confidence, distress_score)
+        triage = self.prioritize_call(confidence, distress_score, content_score)
 
         # Add dispatcher-specific guidance based on priority
         if triage["queue"] == "Q1-IMMEDIATE":
             triage["dispatcher_action"] = (
-                "IMMEDIATE ATTENTION REQUIRED: "
-                "Listen to audio immediately. High distress detected with poor transcription quality. "
+                "🚨 IMMEDIATE ATTENTION REQUIRED: "
+                "Listen to audio immediately. Critical emergency indicators detected. "
                 "Caller may be using heavy Patois or speaking under extreme stress. "
-                "Prepare for potential evacuation or emergency response."
+                "Prepare for immediate dispatch and potential multi-unit response."
             )
             triage["escalation_required"] = True
 
+        elif triage["queue"] == "Q2-ELEVATED":
+            triage["dispatcher_action"] = (
+                "⚠️ HIGH PRIORITY: "
+                "Serious incident reported. Review transcript and extracted entities for dispatch. "
+                "Content indicators suggest significant emergency requiring prompt response. "
+                "Verify location and hazard type, dispatch appropriate units."
+            )
+            triage["escalation_required"] = False
+
         elif triage["queue"] == "Q3-MONITOR":
             triage["dispatcher_action"] = (
-                "ELEVATED PRIORITY: "
-                "Review transcript for dispatch requirements. Caller shows stress indicators "
-                "but communication is clear. Assess situation urgency from content."
+                "👁️ MONITOR SITUATION: "
+                "Caller shows stress indicators but communication is clear. "
+                "Content does not indicate immediate life threat. "
+                "Monitor for escalation, assess dispatch priority based on available resources."
             )
             triage["escalation_required"] = False
 
         elif triage["queue"] == "Q5-REVIEW":
             triage["dispatcher_action"] = (
-                "REVIEW WHEN AVAILABLE: "
+                "📋 REVIEW WHEN AVAILABLE: "
                 "Audio review recommended due to low transcription confidence. "
-                "No immediate distress indicators. Verify content when time permits."
+                "No immediate distress or content urgency indicators. "
+                "Verify content when time permits, may require callback."
             )
             triage["escalation_required"] = False
 
         else:  # Q5-ROUTINE
             triage["dispatcher_action"] = (
-                "ROUTINE LOGGING: "
-                "Standard infrastructure report. Log details and create dispatch order "
-                "according to standard procedures."
+                "�� ROUTINE LOGGING: "
+                "Standard infrastructure report with clear communication. "
+                "Log details and create dispatch order according to standard procedures. "
+                "No elevated priority required."
             )
             triage["escalation_required"] = False
 

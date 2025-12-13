@@ -13,6 +13,7 @@ from models import Call
 from data import CALL_LOG
 from audio_processor import BioAcousticProcessor
 from asr_service import ASRService
+from nlp_service import NLPService
 from triage_engine import TriageEngine
 from live_processor import handle_live_call
 from database import init_db, get_db, LiveCall
@@ -44,6 +45,7 @@ def startup_event():
 # Initialize TRIDENT processing services (lazy loading)
 bio_processor = BioAcousticProcessor()
 asr_service = ASRService()
+nlp_service = NLPService()
 triage_engine = TriageEngine()
 
 # CORS middleware for local React dev
@@ -313,10 +315,11 @@ async def analyze_audio(file: UploadFile = File(...)):
     """
     Analyze uploaded audio file through TRIDENT processing pipeline.
 
-    Processes audio through three layers:
+    Processes audio through all three layers:
     1. Layer 1 (ASR): Caribbean-tuned speech recognition with confidence scoring
-    2. Layer 3 (Bio-Acoustic): Vocal distress detection via pitch/energy analysis
-    3. Triage: Priority queue routing based on confidence × distress matrix
+    2. Layer 2 (NLP): Entity extraction and content indicator scoring
+    3. Layer 3 (Bio-Acoustic): Vocal distress detection via pitch/energy analysis
+    4. Triage: Priority queue routing via 3D decision matrix (Confidence × Content × Concern)
 
     Args:
         file: Audio file (WAV, MP3, etc. - librosa handles most formats)
@@ -326,6 +329,15 @@ async def analyze_audio(file: UploadFile = File(...)):
         {
             "transcript": str,
             "confidence": float,
+            "nlp": {
+                "entities": {
+                    "location": {...},
+                    "mechanism_hazard": str,
+                    "clinical_indicators": {...},
+                    "scale": {...}
+                },
+                "content_score": float
+            },
             "bio_acoustic": {
                 "f0_mean": float,
                 "f0_cv": float,
@@ -366,20 +378,29 @@ async def analyze_audio(file: UploadFile = File(...)):
         logger.info("Running ASR (Layer 1)...")
         asr_result = asr_service.transcribe_with_confidence(temp_file_path)
 
+        # Layer 2: NLP entity extraction and content scoring
+        logger.info("Running NLP entity extraction (Layer 2)...")
+        nlp_result = nlp_service.extract_entities(
+            transcript=asr_result["transcript"],
+            confidence=asr_result["confidence"]
+        )
+
         # Layer 3: Bio-acoustic distress detection
         logger.info("Running bio-acoustic analysis (Layer 3)...")
         bio_result = bio_processor.extract_features(temp_file_path)
 
-        # Triage decision
-        logger.info("Generating triage decision...")
+        # Triage decision with 3D matrix
+        logger.info("Generating triage decision (3D matrix)...")
         triage_result = triage_engine.generate_dispatcher_guidance(
             confidence=asr_result["confidence"],
             distress_score=bio_result["distress_score"],
-            transcript=asr_result["transcript"]
+            transcript=asr_result["transcript"],
+            content_score=nlp_result["content_score"]
         )
 
         logger.info(f"Analysis complete: Queue={triage_result['queue']}, "
                    f"Confidence={asr_result['confidence']:.3f}, "
+                   f"Content={nlp_result['content_score']:.3f}, "
                    f"Distress={bio_result['distress_score']:.3f}")
 
         # Cleanup temporary file
@@ -390,6 +411,10 @@ async def analyze_audio(file: UploadFile = File(...)):
         return {
             "transcript": asr_result["transcript"],
             "confidence": asr_result["confidence"],
+            "nlp": {
+                "entities": nlp_result["entities"],
+                "content_score": nlp_result["content_score"]
+            },
             "bio_acoustic": bio_result,
             "triage": triage_result
         }
