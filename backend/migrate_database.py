@@ -42,6 +42,9 @@ def migrate_database():
 
     if 'category' not in columns:
         migrations_needed.append("ALTER TABLE live_calls ADD COLUMN category VARCHAR")
+        
+    if 'content_score' not in columns:
+        migrations_needed.append("ALTER TABLE live_calls ADD COLUMN content_score FLOAT")
 
     if not migrations_needed:
         print("✅ Database already up to date - no migrations needed")

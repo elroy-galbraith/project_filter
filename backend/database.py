@@ -52,6 +52,9 @@ class LiveCall(Base):
     transcript = Column(Text, nullable=True)
     confidence_score = Column(Float, nullable=True)  # 0.0 - 1.0
 
+    # NLP Layer (Layer 2)
+    content_score = Column(Float, nullable=True)  # 0.0 - 1.0
+
     # Bio-Acoustic Layer (Layer 3)
     distress_score = Column(Float, nullable=True)  # 0.0 - 100.0
     pitch_mean_hz = Column(Float, nullable=True)

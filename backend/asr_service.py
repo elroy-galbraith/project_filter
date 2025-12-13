@@ -22,6 +22,11 @@ from peft import PeftModel
 from typing import Dict, Tuple
 import logging
 import os
+import warnings
+
+# Suppress the attention mask warning from Whisper tokenizer
+# This is a known Whisper quirk where pad_token == eos_token
+warnings.filterwarnings("ignore", message=".*attention mask is not set.*")
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -129,10 +134,19 @@ class ASRService:
             logger.info("Generating transcription...")
             with torch.no_grad():
                 # Generate sequence IDs
+                # Note: attention_mask is only passed if it exists in inputs
+                generate_kwargs = {
+                    "language": "en",
+                    "task": "transcribe"
+                }
+
+                # Only add attention_mask if processor created one (for batched inputs)
+                if hasattr(inputs, 'attention_mask') and inputs.attention_mask is not None:
+                    generate_kwargs["attention_mask"] = inputs.attention_mask
+
                 generated_ids = self.model.generate(
                     inputs.input_features,
-                    language="en",
-                    task="transcribe"
+                    **generate_kwargs
                 )
 
             # Decode transcript
