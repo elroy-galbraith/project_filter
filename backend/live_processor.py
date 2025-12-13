@@ -150,13 +150,23 @@ class LiveCallSession:
     WebSocket communication for real-time updates.
     """
 
-    def __init__(self, call_id: str, websocket: WebSocket):
+    def __init__(
+        self,
+        call_id: str,
+        websocket: WebSocket,
+        asr_service=None,
+        bio_processor=None,
+        triage_engine=None
+    ):
         """
         Initialize live call session.
 
         Args:
             call_id: Unique identifier for the call
             websocket: WebSocket connection for this session
+            asr_service: Shared ASR service instance (optional)
+            bio_processor: Shared bio-acoustic processor instance (optional)
+            triage_engine: Shared triage engine instance (optional)
         """
         self.call_id = call_id
         self.websocket = websocket
@@ -166,10 +176,10 @@ class LiveCallSession:
         # Audio buffer
         self.audio_buffer = AudioBuffer(sample_rate=16000, chunk_duration=1.0)
 
-        # Processing services (lazy loaded)
-        self.asr_service = None
-        self.bio_processor = None
-        self.triage_engine = None
+        # Processing services (shared singletons from main.py)
+        self.asr_service = asr_service
+        self.bio_processor = bio_processor
+        self.triage_engine = triage_engine
 
         # Session state
         self.full_transcript = ""
@@ -181,9 +191,13 @@ class LiveCallSession:
         logger.info(f"Live call session started: {call_id}")
 
     def _ensure_services_loaded(self):
-        """Lazy load processing services on first use."""
+        """Lazy load processing services on first use (fallback if not provided)."""
         if self.asr_service is None:
-            logger.info("Loading processing services...")
+            logger.info("Loading processing services (fallback - services not injected)...")
+            from asr_service import ASRService
+            from audio_processor import BioAcousticProcessor
+            from triage_engine import TriageEngine
+
             self.asr_service = ASRService()
             self.bio_processor = BioAcousticProcessor()
             self.triage_engine = TriageEngine()
@@ -376,6 +390,8 @@ class LiveCallSession:
         """
         Finalize the call and return complete analysis.
 
+        Saves call record to database for persistent storage.
+
         Returns:
             Complete call analysis
         """
@@ -396,7 +412,11 @@ class LiveCallSession:
                 logger.debug(f"Could not process final buffer: {e}")
 
         # Calculate call duration
-        call_duration = (datetime.now() - self.start_time).total_seconds()
+        end_time = datetime.now()
+        call_duration = (end_time - self.start_time).total_seconds()
+
+        # Save to database
+        self._save_to_database(end_time, call_duration)
 
         # Return final analysis
         return {
@@ -409,21 +429,111 @@ class LiveCallSession:
             "chunks_processed": self.chunk_count
         }
 
+    def _save_to_database(self, end_time: datetime, call_duration: float) -> None:
+        """
+        Save call record to database.
 
-async def handle_live_call(websocket: WebSocket, call_id: str) -> None:
+        Args:
+            end_time: Call end timestamp
+            call_duration: Total call duration in seconds
+        """
+        try:
+            from database import SessionLocal, LiveCall
+
+            db = SessionLocal()
+            try:
+                # Extract bio-acoustic features if available
+                pitch_mean = None
+                pitch_cv = None
+                energy_rms = None
+                jitter = None
+
+                # Extract triage details
+                triage_queue = None
+                priority_level = None
+                flag_audio_review = False
+                escalation_required = False
+                dispatcher_action = None
+                triage_reasoning = None
+
+                if self.current_triage:
+                    triage_queue = self.current_triage.get("queue")
+                    priority_level = self.current_triage.get("priority_level")
+                    flag_audio_review = self.current_triage.get("flag_audio_review", False)
+                    escalation_required = self.current_triage.get("escalation_required", False)
+                    dispatcher_action = self.current_triage.get("dispatcher_action")
+                    triage_reasoning = self.current_triage.get("reasoning")
+
+                # Create database record
+                live_call = LiveCall(
+                    call_id=self.call_id,
+                    start_time=self.start_time,
+                    end_time=end_time,
+                    duration_seconds=call_duration,
+                    chunks_processed=self.chunk_count,
+                    total_audio_duration=self.audio_buffer.total_duration,
+                    transcript=self.full_transcript,
+                    confidence_score=self.latest_confidence,
+                    distress_score=self.latest_distress,
+                    pitch_mean_hz=pitch_mean,
+                    pitch_cv=pitch_cv,
+                    energy_rms=energy_rms,
+                    jitter=jitter,
+                    triage_queue=triage_queue,
+                    priority_level=priority_level,
+                    flag_audio_review=flag_audio_review,
+                    escalation_required=escalation_required,
+                    dispatcher_action=dispatcher_action,
+                    triage_reasoning=triage_reasoning,
+                    triage_data=self.current_triage,
+                    status="completed"
+                )
+
+                db.add(live_call)
+                db.commit()
+                db.refresh(live_call)
+
+                logger.info(f"Call {self.call_id} saved to database (ID: {live_call.id})")
+
+            finally:
+                db.close()
+
+        except Exception as e:
+            logger.error(f"Error saving call to database: {e}")
+            import traceback
+            traceback.print_exc()
+            # Don't raise - database failure shouldn't crash the session
+
+
+async def handle_live_call(
+    websocket: WebSocket,
+    call_id: str,
+    asr_service=None,
+    bio_processor=None,
+    triage_engine=None
+) -> None:
     """
     WebSocket handler for live call processing.
 
     Args:
         websocket: WebSocket connection
         call_id: Unique identifier for the call
+        asr_service: Shared ASR service instance (optional)
+        bio_processor: Shared bio-acoustic processor instance (optional)
+        triage_engine: Shared triage engine instance (optional)
     """
     # Accept WebSocket connection
     await websocket.accept()
     logger.info(f"WebSocket connected: {call_id}")
 
-    # Create session
-    session = LiveCallSession(call_id, websocket)
+    # Create session with shared services (preloaded at startup)
+    session = LiveCallSession(
+        call_id,
+        websocket,
+        asr_service=asr_service,
+        bio_processor=bio_processor,
+        triage_engine=triage_engine
+    )
 
     try:
         # Send connection confirmation
