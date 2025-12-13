@@ -1190,3 +1190,440 @@ hr {
 .leaflet-control-attribution a {
   color: var(--accent-caribbean);
 }
+
+/* ============================================
+   LIVE CALL MODE STYLES
+   ============================================ */
+
+.mode-toggle {
+  display: flex;
+  gap: 1rem;
+  padding: 1rem 2rem;
+  background: var(--bg-card);
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.mode-btn {
+  padding: 0.75rem 1.5rem;
+  background: transparent;
+  border: 2px solid var(--border-subtle);
+  border-radius: 6px;
+  color: var(--text-secondary);
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.mode-btn:hover {
+  border-color: var(--accent-caribbean);
+  color: var(--text-primary);
+  background: rgba(0, 201, 183, 0.1);
+}
+
+.mode-btn.active {
+  background: var(--accent-caribbean);
+  border-color: var(--accent-caribbean);
+  color: var(--bg-dark);
+}
+
+.live-mode-layout {
+  padding: 2rem;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+/* Live Call Container */
+.live-call-container {
+  background: var(--bg-card);
+  border-radius: 12px;
+  padding: 2rem;
+  border: 1px solid var(--border-subtle);
+}
+
+.live-call-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+  padding-bottom: 1rem;
+  border-bottom: 2px solid var(--border-subtle);
+}
+
+.live-call-header h2 {
+  font-size: 1.75rem;
+  color: var(--accent-caribbean);
+  margin: 0;
+}
+
+.call-id {
+  font-size: 0.95rem;
+  color: var(--text-secondary);
+}
+
+.call-id strong {
+  color: var(--accent-gold);
+  font-family: monospace;
+}
+
+/* Controls */
+.live-call-controls {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.btn-start-call,
+.btn-end-call,
+.btn-new-call {
+  padding: 1rem 2.5rem;
+  font-size: 1.1rem;
+  font-weight: 700;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.btn-start-call {
+  background: linear-gradient(135deg, var(--success-green), #059669);
+  color: white;
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+}
+
+.btn-start-call:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
+}
+
+.btn-start-call:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.btn-end-call {
+  background: linear-gradient(135deg, var(--danger-red), #dc2626);
+  color: white;
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+}
+
+.btn-end-call:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(239, 68, 68, 0.4);
+}
+
+.btn-new-call {
+  background: var(--accent-caribbean);
+  color: var(--bg-dark);
+  box-shadow: 0 4px 12px rgba(0, 201, 183, 0.3);
+}
+
+.btn-new-call:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 201, 183, 0.4);
+}
+
+.call-active-controls {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+}
+
+.recording-indicator {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1.5rem;
+  background: rgba(239, 68, 68, 0.1);
+  border: 2px solid var(--danger-red);
+  border-radius: 8px;
+  font-weight: 700;
+  color: var(--danger-red);
+}
+
+.recording-dot {
+  width: 12px;
+  height: 12px;
+  background: var(--danger-red);
+  border-radius: 50%;
+  animation: pulse-red 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse-red {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.5;
+    transform: scale(1.1);
+  }
+}
+
+/* Status */
+.live-call-status {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+  margin-bottom: 2rem;
+  padding: 1.5rem;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 8px;
+}
+
+.status-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.status-item.processing {
+  flex-direction: row;
+  align-items: center;
+  color: var(--accent-gold);
+}
+
+.status-label {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  font-weight: 600;
+}
+
+.status-value {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  font-family: monospace;
+}
+
+.status-value.status-connected {
+  color: var(--success-green);
+}
+
+.status-value.status-connecting {
+  color: var(--warning-amber);
+}
+
+.status-value.status-disconnected {
+  color: var(--text-secondary);
+}
+
+.status-value.status-error {
+  color: var(--danger-red);
+}
+
+.spinner-small {
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(240, 180, 41, 0.3);
+  border-top-color: var(--accent-gold);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  margin-right: 0.5rem;
+}
+
+/* Error Display */
+.live-call-error {
+  padding: 1rem 1.5rem;
+  background: rgba(239, 68, 68, 0.1);
+  border: 2px solid var(--danger-red);
+  border-radius: 8px;
+  color: var(--danger-red);
+  font-weight: 600;
+  margin-bottom: 2rem;
+}
+
+/* Live Results */
+.live-call-results {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+/* Triage Status */
+.triage-status {
+  padding: 1.5rem;
+  border-radius: 8px;
+  border: 2px solid;
+  background: rgba(0, 0, 0, 0.2);
+}
+
+.triage-status.triage-Q1-IMMEDIATE {
+  border-color: var(--danger-red);
+  background: linear-gradient(135deg, var(--gradient-red-start), var(--gradient-red-end));
+  box-shadow: 0 0 20px var(--danger-glow);
+}
+
+.triage-status.triage-Q3-MONITOR {
+  border-color: var(--warning-amber);
+  background: rgba(245, 158, 11, 0.1);
+}
+
+.triage-status.triage-Q5-REVIEW,
+.triage-status.triage-Q5-ROUTINE {
+  border-color: var(--success-green);
+  background: linear-gradient(135deg, var(--gradient-green-start), var(--gradient-green-end));
+}
+
+.triage-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.triage-queue {
+  font-size: 1.5rem;
+  font-weight: 900;
+  letter-spacing: 1px;
+}
+
+.triage-priority {
+  font-size: 1rem;
+  font-weight: 700;
+  opacity: 0.8;
+}
+
+.triage-action {
+  font-size: 0.95rem;
+  line-height: 1.6;
+  color: var(--text-primary);
+}
+
+/* Live Transcript */
+.live-transcript {
+  background: linear-gradient(135deg, var(--bg-card) 0%, var(--bg-card-hover) 100%);
+  padding: 1.5rem;
+  border-radius: 8px;
+  border: 1px solid var(--border-subtle);
+}
+
+.live-transcript h3 {
+  font-size: 1.1rem;
+  color: var(--accent-gold);
+  margin-bottom: 1rem;
+  text-transform: uppercase;
+}
+
+.transcript-box {
+  background: rgba(0, 0, 0, 0.3);
+  padding: 1.5rem;
+  border-radius: 6px;
+  min-height: 150px;
+  line-height: 1.7;
+  font-size: 1.05rem;
+  border-left: 3px solid var(--accent-caribbean);
+}
+
+.transcript-box em {
+  color: var(--text-secondary);
+  font-style: italic;
+}
+
+.confidence-indicator {
+  margin-top: 1rem;
+  padding: 0.75rem;
+  background: rgba(0, 201, 183, 0.1);
+  border-radius: 6px;
+  font-size: 0.95rem;
+  color: var(--text-secondary);
+}
+
+.confidence-indicator strong {
+  color: var(--accent-caribbean);
+  font-size: 1.1rem;
+}
+
+/* Live Bio-Acoustic */
+.live-bioacoustic {
+  background: linear-gradient(135deg, var(--bg-card) 0%, var(--bg-card-hover) 100%);
+  padding: 1.5rem;
+  border-radius: 8px;
+  border: 1px solid var(--border-subtle);
+}
+
+.live-bioacoustic h3 {
+  font-size: 1.1rem;
+  color: var(--accent-gold);
+  margin-bottom: 1rem;
+  text-transform: uppercase;
+}
+
+.bio-metrics {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+}
+
+.bio-metric {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 6px;
+  border-left: 3px solid var(--accent-caribbean);
+}
+
+.metric-label {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  font-weight: 600;
+}
+
+.metric-value {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  font-family: monospace;
+}
+
+.metric-value.high-distress {
+  color: var(--danger-red);
+}
+
+.metric-value.low-distress {
+  color: var(--success-green);
+}
+
+/* Instructions */
+.live-call-instructions {
+  padding: 2rem;
+  background: rgba(0, 201, 183, 0.05);
+  border-radius: 8px;
+  border: 1px solid rgba(0, 201, 183, 0.2);
+}
+
+.live-call-instructions h3 {
+  color: var(--accent-caribbean);
+  margin-bottom: 1rem;
+  font-size: 1.2rem;
+}
+
+.live-call-instructions ol {
+  margin-left: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.live-call-instructions li {
+  margin-bottom: 0.75rem;
+  line-height: 1.6;
+  color: var(--text-primary);
+}
+
+.live-call-instructions .note {
+  padding: 1rem;
+  background: rgba(240, 180, 41, 0.1);
+  border-left: 3px solid var(--accent-gold);
+  border-radius: 4px;
+  font-size: 0.95rem;
+  color: var(--text-secondary);
+}
+
+.live-call-instructions .note strong {
+  color: var(--accent-gold);
+}

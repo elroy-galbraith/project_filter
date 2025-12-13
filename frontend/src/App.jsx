@@ -5,8 +5,10 @@ import MapView from './components/MapView';
 import NLPIntelRow from './components/NLPIntelRow';
 import TranscriptCompact from './components/TranscriptCompact';
 import BioAcousticCompact from './components/BioAcousticCompact';
+import LiveCall from './components/LiveCall';
 
 function App() {
+  const [mode, setMode] = useState('log'); // 'log' or 'live'
   const [calls, setCalls] = useState([]);
   const [selectedCall, setSelectedCall] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -122,48 +124,70 @@ function App() {
         </div>
       </div>
 
+      {/* Mode Toggle */}
+      <div className="mode-toggle">
+        <button
+          className={`mode-btn ${mode === 'log' ? 'active' : ''}`}
+          onClick={() => setMode('log')}
+        >
+          📋 Call Log
+        </button>
+        <button
+          className={`mode-btn ${mode === 'live' ? 'active' : ''}`}
+          onClick={() => setMode('live')}
+        >
+          🎙️ Live Call
+        </button>
+      </div>
+
       <hr />
 
       {/* Main Layout */}
-      <div className="layout" style={{ gridTemplateColumns: `${sidebarWidth}% 12px ${100 - sidebarWidth - 1}%` }}>
-        {/* Map Sidebar */}
-        <div className="sidebar">
-          <MapView
-            calls={calls}
-            selectedCall={selectedCall}
-            onSelectCall={handleSelectCall}
-          />
-        </div>
+      {mode === 'log' ? (
+        <div className="layout" style={{ gridTemplateColumns: `${sidebarWidth}% 12px ${100 - sidebarWidth - 1}%` }}>
+          {/* Map Sidebar */}
+          <div className="sidebar">
+            <MapView
+              calls={calls}
+              selectedCall={selectedCall}
+              onSelectCall={handleSelectCall}
+            />
+          </div>
 
-        {/* Resize Handle */}
-        <div
-          className={`resize-handle ${isResizing ? 'resizing' : ''}`}
-          onMouseDown={handleMouseDown}
-        >
-          <div className="resize-handle-bar"></div>
-        </div>
+          {/* Resize Handle */}
+          <div
+            className={`resize-handle ${isResizing ? 'resizing' : ''}`}
+            onMouseDown={handleMouseDown}
+          >
+            <div className="resize-handle-bar"></div>
+          </div>
 
-        {/* Main Content - Zero Scroll Layout */}
-        <div className="main-content">
-          {switching ? (
-            <div className="loading-text">
-              <div className="spinner"></div>
-              Analyzing audio stream...
-            </div>
-          ) : (
-            <>
-              {/* NLP Intel Row - Dispatch-Critical Data (Top Priority) */}
-              <NLPIntelRow call={selectedCall} />
-
-              {/* Evidence Row - Supporting Information */}
-              <div className="evidence-row">
-                <TranscriptCompact call={selectedCall} />
-                <BioAcousticCompact call={selectedCall} />
+          {/* Main Content - Zero Scroll Layout */}
+          <div className="main-content">
+            {switching ? (
+              <div className="loading-text">
+                <div className="spinner"></div>
+                Analyzing audio stream...
               </div>
-            </>
-          )}
+            ) : (
+              <>
+                {/* NLP Intel Row - Dispatch-Critical Data (Top Priority) */}
+                <NLPIntelRow call={selectedCall} />
+
+                {/* Evidence Row - Supporting Information */}
+                <div className="evidence-row">
+                  <TranscriptCompact call={selectedCall} />
+                  <BioAcousticCompact call={selectedCall} />
+                </div>
+              </>
+            )}
+          </div>
         </div>
-      </div>
+      ) : (
+        <div className="live-mode-layout">
+          <LiveCall />
+        </div>
+      )}
 
       {/* Footer */}
       <div className="footer">
