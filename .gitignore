@@ -139,6 +139,12 @@ secrets/
 credentials/
 *.secret
 
+# Model weights and artifacts
+backend/model_full/
+*.safetensors
+*.bin
+training_args.bin
+
 # LaTeX Build Artifacts
 *.aux
 *.bbl
