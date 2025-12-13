@@ -29,6 +29,7 @@ import json
 
 from asr_service import ASRService
 from audio_processor import BioAcousticProcessor
+from nlp_service import NLPService
 from triage_engine import TriageEngine
 
 logging.basicConfig(level=logging.INFO)
@@ -156,6 +157,7 @@ class LiveCallSession:
         websocket: WebSocket,
         asr_service=None,
         bio_processor=None,
+        nlp_service=None,
         triage_engine=None
     ):
         """
@@ -166,6 +168,7 @@ class LiveCallSession:
             websocket: WebSocket connection for this session
             asr_service: Shared ASR service instance (optional)
             bio_processor: Shared bio-acoustic processor instance (optional)
+            nlp_service: Shared NLP service instance (optional)
             triage_engine: Shared triage engine instance (optional)
         """
         self.call_id = call_id
@@ -179,10 +182,17 @@ class LiveCallSession:
         # Processing services (shared singletons from main.py)
         self.asr_service = asr_service
         self.bio_processor = bio_processor
+        self.nlp_service = nlp_service
         self.triage_engine = triage_engine
 
         # Session state
         self.full_transcript = ""
+
+        # NEW: Weighted metrics tracking for proper averaging across chunks
+        self.confidence_scores = []  # List of (confidence, duration) tuples
+        self.distress_scores = []    # List of (distress, duration) tuples
+        self.content_score = 0.0     # Latest content score from NLP
+
         self.latest_confidence = 0.0
         self.latest_distress = 0.0
         self.current_triage = None
@@ -196,12 +206,50 @@ class LiveCallSession:
             logger.info("Loading processing services (fallback - services not injected)...")
             from asr_service import ASRService
             from audio_processor import BioAcousticProcessor
+            from nlp_service import NLPService
             from triage_engine import TriageEngine
 
             self.asr_service = ASRService()
             self.bio_processor = BioAcousticProcessor()
+            self.nlp_service = NLPService()
             self.triage_engine = TriageEngine()
             logger.info("Services loaded successfully")
+
+    def _get_weighted_average_confidence(self) -> float:
+        """
+        Compute weighted average confidence across all chunks.
+        Prevents confidence from dropping artificially on short/poor chunks.
+
+        Returns:
+            Weighted average confidence score (0-1)
+        """
+        if not self.confidence_scores:
+            return 0.0
+
+        total_weight = sum(duration for _, duration in self.confidence_scores)
+        if total_weight == 0:
+            return 0.0
+
+        weighted_sum = sum(conf * duration for conf, duration in self.confidence_scores)
+        return weighted_sum / total_weight
+
+    def _get_weighted_average_distress(self) -> float:
+        """
+        Compute weighted average distress across all chunks.
+        Prevents distress from spiking on short chunks with less averaging.
+
+        Returns:
+            Weighted average distress score (0-1)
+        """
+        if not self.distress_scores:
+            return 0.0
+
+        total_weight = sum(duration for _, duration in self.distress_scores)
+        if total_weight == 0:
+            return 0.0
+
+        weighted_sum = sum(distress * duration for distress, duration in self.distress_scores)
+        return weighted_sum / total_weight
 
     async def process_audio_chunk(self, audio_data: bytes) -> None:
         """
@@ -264,26 +312,47 @@ class LiveCallSession:
             )
 
             # Update transcript (append new text)
-            if asr_result["transcript"]:
+            chunk_transcript = asr_result["transcript"].strip()
+            chunk_duration = len(audio) / 16000
+
+            if chunk_transcript:
                 if self.full_transcript:
-                    self.full_transcript += " " + asr_result["transcript"]
+                    self.full_transcript += " " + chunk_transcript
                 else:
-                    self.full_transcript = asr_result["transcript"]
-                self.latest_confidence = asr_result["confidence"]
+                    self.full_transcript = chunk_transcript
+
+                # NEW: Track confidence with weight (fixes spurious drops)
+                self.confidence_scores.append((asr_result["confidence"], chunk_duration))
+                self.latest_confidence = self._get_weighted_average_confidence()
 
             # 2. Bio-Acoustic Analysis
             logger.info("Running bio-acoustic analysis...")
             bio_result = await asyncio.to_thread(
                 self._analyze_bio_acoustic, audio
             )
-            self.latest_distress = bio_result["distress_score"]
 
-            # 3. Triage Decision
+            # NEW: Track distress with weight (fixes spurious spikes)
+            self.distress_scores.append((bio_result["distress_score"], chunk_duration))
+            self.latest_distress = self._get_weighted_average_distress()
+
+            # 3. NLP Entity Extraction (NEW - fixes Q1 escalation issue)
+            logger.info("Running NLP analysis...")
+            if self.full_transcript and len(self.full_transcript.strip()) >= 5:
+                nlp_result = await asyncio.to_thread(
+                    self._extract_entities, self.full_transcript, self.latest_confidence
+                )
+                self.content_score = nlp_result["content_score"]
+            else:
+                # Empty transcript - no content urgency
+                self.content_score = 0.0
+
+            # 4. Triage Decision (with 3D matrix - fixes Q1 escalation)
             logger.info("Generating triage decision...")
             triage_result = self.triage_engine.generate_dispatcher_guidance(
                 confidence=self.latest_confidence,
                 distress_score=self.latest_distress,
-                transcript=self.full_transcript
+                transcript=self.full_transcript,
+                content_score=self.content_score  # NEW: 3D matrix
             )
             self.current_triage = triage_result
 
@@ -291,16 +360,19 @@ class LiveCallSession:
             await self.send_update({
                 "type": "processing_complete",
                 "transcript": self.full_transcript,
-                "transcript_chunk": asr_result["transcript"],
+                "transcript_chunk": chunk_transcript,
                 "confidence": self.latest_confidence,
+                "content_score": self.content_score,  # NEW
                 "bio_acoustic": bio_result,
+                "distress_score": self.latest_distress,  # NEW: explicit field
                 "triage": triage_result,
                 "call_duration": self.audio_buffer.get_duration()
             })
 
             logger.info(f"Processing complete: Queue={triage_result['queue']}, "
-                       f"Confidence={self.latest_confidence:.3f}, "
-                       f"Distress={self.latest_distress:.3f}")
+                       f"Conf={self.latest_confidence:.3f}, "
+                       f"Cont={self.content_score:.3f}, "  # NEW
+                       f"Dist={self.latest_distress:.3f}")
 
             # Clear buffer for next utterance
             self.audio_buffer.clear()
@@ -359,6 +431,26 @@ class LiveCallSession:
 
         return result
 
+    def _extract_entities(self, transcript: str, confidence: float) -> Dict:
+        """
+        Extract entities using NLP service.
+
+        Args:
+            transcript: Full transcript text
+            confidence: Current confidence score
+
+        Returns:
+            NLP analysis with entities and content score
+        """
+        if not transcript or len(transcript.strip()) < 5:
+            # Return empty result for very short/empty transcripts
+            return {
+                "entities": self.nlp_service._get_empty_entities(),
+                "content_score": 0.0
+            }
+
+        return self.nlp_service.extract_entities(transcript, confidence)
+
     async def send_update(self, data: Dict) -> None:
         """
         Send update to WebSocket client.
@@ -400,16 +492,17 @@ class LiveCallSession:
         # Mark session as inactive
         self.is_active = False
 
-        # Process any remaining audio in buffer (if significant and WebSocket still open)
-        if self.audio_buffer.get_duration() > 2.0:  # Only process if >2s remaining
-            # Check if WebSocket is still connected before processing
+        # FIXED: Only process final buffer if we haven't processed any chunks yet
+        # This prevents duplicate processing which was causing escalations
+        if self.chunk_count == 0 and self.audio_buffer.get_duration() > 2.0:
+            logger.info("No chunks processed yet, processing final buffer")
             try:
                 if self.websocket.client_state.name == 'CONNECTED':
                     await self.process_buffer()
-                else:
-                    logger.info("WebSocket closed, skipping final buffer processing")
             except Exception as e:
                 logger.debug(f"Could not process final buffer: {e}")
+        else:
+            logger.info(f"Skipping final buffer processing ({self.chunk_count} chunks already processed)")
 
         # Calculate call duration
         end_time = datetime.now()
@@ -418,13 +511,14 @@ class LiveCallSession:
         # Save to database
         self._save_to_database(end_time, call_duration)
 
-        # Return final analysis
+        # Return final analysis (use weighted averages)
         return {
             "call_id": self.call_id,
             "duration": call_duration,
             "transcript": self.full_transcript,
-            "confidence": self.latest_confidence,
-            "distress_score": self.latest_distress,
+            "confidence": self._get_weighted_average_confidence(),  # FIXED: weighted average
+            "content_score": self.content_score,  # NEW
+            "distress_score": self._get_weighted_average_distress(),  # FIXED: weighted average
             "triage": self.current_triage,
             "chunks_processed": self.chunk_count
         }
@@ -464,7 +558,7 @@ class LiveCallSession:
                     dispatcher_action = self.current_triage.get("dispatcher_action")
                     triage_reasoning = self.current_triage.get("reasoning")
 
-                # Create database record
+                # Create database record (use weighted averages)
                 live_call = LiveCall(
                     call_id=self.call_id,
                     start_time=self.start_time,
@@ -473,8 +567,9 @@ class LiveCallSession:
                     chunks_processed=self.chunk_count,
                     total_audio_duration=self.audio_buffer.total_duration,
                     transcript=self.full_transcript,
-                    confidence_score=self.latest_confidence,
-                    distress_score=self.latest_distress,
+                    confidence_score=self._get_weighted_average_confidence(),  # FIXED
+                    distress_score=self._get_weighted_average_distress(),  # FIXED
+                    content_score=self.content_score,  # NEW (needs DB migration)
                     pitch_mean_hz=pitch_mean,
                     pitch_cv=pitch_cv,
                     energy_rms=energy_rms,
@@ -510,6 +605,7 @@ async def handle_live_call(
     call_id: str,
     asr_service=None,
     bio_processor=None,
+    nlp_service=None,
     triage_engine=None
 ) -> None:
     """
@@ -520,6 +616,7 @@ async def handle_live_call(
         call_id: Unique identifier for the call
         asr_service: Shared ASR service instance (optional)
         bio_processor: Shared bio-acoustic processor instance (optional)
+        nlp_service: Shared NLP service instance (optional)
         triage_engine: Shared triage engine instance (optional)
     """
     # Accept WebSocket connection
@@ -532,6 +629,7 @@ async def handle_live_call(
         websocket,
         asr_service=asr_service,
         bio_processor=bio_processor,
+        nlp_service=nlp_service,
         triage_engine=triage_engine
     )
 

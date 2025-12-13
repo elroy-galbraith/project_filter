@@ -306,6 +306,7 @@ async def websocket_live_call(websocket: WebSocket):
         call_id,
         asr_service=asr_service,
         bio_processor=bio_processor,
+        nlp_service=nlp_service,
         triage_engine=triage_engine
     )
 
