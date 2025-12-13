@@ -227,66 +227,93 @@ Return ONLY the JSON object, no additional text.
             Content score normalized to 0-1 range
         """
         score = 0.0
+        score_breakdown = {}
 
         # 1. Hazard Score (S_hazard)
+        # Increased fire weight to ensure structure fires escalate properly
         hazard_weights = {
-            "violence": 30,
-            "fire": 25,
-            "medical": 20,
+            "violence": 35,  # Increased - immediate life threat
+            "fire": 35,      # Increased - structure fires are life-threatening
+            "medical": 25,   # Increased - medical emergencies need urgency
             "flood": 20,
             "traffic": 15,
             "infrastructure": 10,
             "other": 5
         }
         hazard = entities.get("mechanism_hazard", "other")
-        score += hazard_weights.get(hazard, 5)
+        hazard_score = hazard_weights.get(hazard, 5)
+        score += hazard_score
+        score_breakdown["hazard"] = hazard_score
 
         # 2. Life Threat Score (S_threat)
         clinical = entities.get("clinical_indicators", {})
+        threat_score = 0
 
         # Breathing status
         breathing = clinical.get("breathing", "unknown")
         if breathing == "not_breathing":
-            score += 30  # Imminent threat
+            threat_score += 30  # Imminent threat
         elif breathing == "impaired":
-            score += 15  # Potential threat
+            threat_score += 15  # Potential threat
 
         # Consciousness status
         consciousness = clinical.get("consciousness", "unknown")
         if consciousness == "unresponsive":
-            score += 30  # Imminent threat
+            threat_score += 30  # Imminent threat
         elif consciousness == "altered":
-            score += 15  # Potential threat
+            threat_score += 15  # Potential threat
 
         # Bleeding status
         bleeding = clinical.get("bleeding", "unknown")
         if bleeding == "heavy":
-            score += 30  # Imminent threat
+            threat_score += 30  # Imminent threat
         elif bleeding == "minor":
-            score += 5
+            threat_score += 5
+
+        score += threat_score
+        score_breakdown["threat"] = threat_score
 
         # 3. Vulnerable Population Score (S_vuln)
         scale = entities.get("scale", {})
-        if scale.get("vulnerable_population", False):
-            score += 15
+        vuln_score = 15 if scale.get("vulnerable_population", False) else 0
+        score += vuln_score
+        score_breakdown["vulnerable"] = vuln_score
 
         # 4. Scale Score (S_scale)
+        scale_score = 0
         persons = scale.get("persons_affected", 0)
         if persons is not None and persons > 0:
-            score += min(20, persons * 5)  # Cap at +20
+            scale_score += min(20, persons * 5)  # Cap at +20
 
         if scale.get("escalating", False):
-            score += 10
+            scale_score += 10
+
+        score += scale_score
+        score_breakdown["scale"] = scale_score
 
         # 5. Location Score (bonus for specific location)
         location = entities.get("location", {})
-        if location.get("address") or location.get("landmark"):
-            score += 5  # Bonus for actionable location info
+        location_score = 5 if (location.get("address") or location.get("landmark")) else 0
+        score += location_score
+        score_breakdown["location"] = location_score
+
+        # 6. Urgency Keywords Score (NEW)
+        # Add bonus for explicit urgency language
+        urgency_keywords = entities.get("urgency_keywords", [])
+        urgency_score = 0
+        if urgency_keywords and len(urgency_keywords) > 0:
+            # +5 points per urgency keyword, capped at +15
+            urgency_score = min(15, len(urgency_keywords) * 5)
+        score += urgency_score
+        score_breakdown["urgency_keywords"] = urgency_score
 
         # Normalize to 0-1 range (cap at 100, then divide)
         normalized_score = min(100, score) / 100.0
 
         logger.info(f"Content score computed: {normalized_score:.2f} (raw: {score})")
+        logger.info(f"Score breakdown: {score_breakdown}")
+        logger.info(f"Extracted entities: hazard={hazard}, escalating={scale.get('escalating', False)}, "
+                   f"persons={persons}, clinical={clinical}")
         return normalized_score
 
 

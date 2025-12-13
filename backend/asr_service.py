@@ -14,6 +14,11 @@ Confidence Formula (from PRD Equation 1, Section 4.2):
     confidence = exp(mean(log_probs))
 """
 
+# IMPORTANT: Suppress warnings BEFORE any other imports
+import warnings
+warnings.filterwarnings("ignore", message=".*attention mask is not set.*")
+warnings.filterwarnings("ignore", category=UserWarning, module="transformers")
+
 import torch
 import librosa
 import numpy as np
@@ -22,11 +27,6 @@ from peft import PeftModel
 from typing import Dict, Tuple
 import logging
 import os
-import warnings
-
-# Suppress the attention mask warning from Whisper tokenizer
-# This is a known Whisper quirk where pad_token == eos_token
-warnings.filterwarnings("ignore", message=".*attention mask is not set.*")
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)

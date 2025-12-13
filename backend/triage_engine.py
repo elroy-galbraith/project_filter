@@ -37,7 +37,7 @@ class TriageEngine:
     # Thresholds from PRD
     CONFIDENCE_THRESHOLD = 0.7  # Below this = low confidence
     DISTRESS_THRESHOLD = 0.5    # Above this = high distress (Concern)
-    CONTENT_THRESHOLD = 0.5     # Above this = high content urgency
+    CONTENT_THRESHOLD = 0.4     # Above this = high content urgency (lowered to catch fires)
 
     def __init__(self):
         """Initialize triage engine with thresholds."""
